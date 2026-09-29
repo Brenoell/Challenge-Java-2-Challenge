@@ -12,7 +12,7 @@ public class Usuario {
     private Integer id;
     private String nome;
     private LocalDate dataNascimento;
-    private int numeroCpf;
+    private Long numeroCpf;
 
     private Conta conta;
 }
