@@ -13,4 +13,5 @@ public class Postagem {
     private int compartilhamentos;
 
     private Conta conta;
+
 }
