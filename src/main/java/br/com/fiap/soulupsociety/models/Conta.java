@@ -16,7 +16,7 @@ public class Conta {
     private String email;
     private LocalDate dataCriacao;
     private String bio;
-    private TipoContaEnum TipoConta;
+    private TipoContaEnum tipoConta;
 
     private Usuario usuario;
     private Carteira carteira;

@@ -33,7 +33,7 @@ public class ComentarioDAO {
 
             ps.setString(1, comentario.getTextoComentario());
             ps.setDate(2, Date.valueOf(comentario.getDataComentario()));
-            ps.setInt(3, comentario.getConta().getId());
+            ps.setInt(3, comentario.getPostagem().getId());
             ps.setInt(4, comentario.getPostagem().getId());
 
             ps.executeUpdate();
