@@ -11,6 +11,6 @@ public class Comentario {
     private Integer id;
     private String textoComentario;
     private LocalDate dataComentario;
-    private Conta conta;
+
     private Postagem postagem;
 }
