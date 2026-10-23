@@ -7,53 +7,45 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CarteiraDAO {
 
     private Connection conexao;
+    private PreparedStatement ps = null;
 
-
-    // Create / Insert - CRUD
-    public void criarCarteira(Carteira carteira) {
-
+    public CarteiraDAO() {
         conexao = ConnectionFactory.obterConexao();
+    }
 
-        String sql = "INSERT INTO CARTEIRA " +
-                "(ID_CARTEIRA, QTD_PONTOS, QTD_VALESDESCONTO, QTD_PASSAGENS, CONTA_IDCONTA) " +
-                "VALUES (?, ?, ?, ?, ?)";
+    public void cadastrar(Carteira carteira) {
+
+        String sql = "INSERT INTO carteira " +
+                "(qtd_pontos, qtd_vales_desconto, qtd_passagens, CONTA_id_conta) " +
+                "VALUES (?, ?, ?, ?)";
 
         try {
+            ps = conexao.prepareStatement(sql);
 
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
-            ps.setInt(1, carteira.getId());
-            ps.setInt(2, carteira.getQuantidadePontos());
-            ps.setInt(3, carteira.getValesDesconto());
-            ps.setInt(4, carteira.getQuantidadePassagens());
-            ps.setInt(5, carteira.getConta().getId());
+            ps.setInt(1, carteira.getQuantidadePontos());
+            ps.setInt(2, carteira.getValesDesconto());
+            ps.setInt(3, carteira.getQuantidadePassagens());
+            ps.setInt(4, carteira.getConta().getId());
 
             ps.executeUpdate();
-
-            ps.close();
-            conexao.close();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-
-    // Read / Select - CRUD
     public Carteira consultarPorId(Integer id) {
 
-        conexao = ConnectionFactory.obterConexao();
-
-        String sql = "SELECT * FROM CARTEIRA WHERE ID_CARTEIRA = ?";
+        String sql = "SELECT * FROM carteira WHERE id_carteira = ?";
 
         try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
+            ps = conexao.prepareStatement(sql);
             ps.setInt(1, id);
 
             ResultSet rs = ps.executeQuery();
@@ -62,182 +54,100 @@ public class CarteiraDAO {
 
                 Carteira carteira = new Carteira();
 
-                carteira.setId(rs.getInt("ID_CARTEIRA"));
-                carteira.setQuantidadePontos(rs.getInt("QTD_PONTOS"));
-                carteira.setValesDesconto(rs.getInt("QTD_VALESDESCONTO"));
-                carteira.setQuantidadePassagens(rs.getInt("QTD_PASSAGENS"));
+                carteira.setId(rs.getInt("id_carteira"));
+                carteira.setQuantidadePontos(rs.getInt("qtd_pontos"));
+                carteira.setValesDesconto(
+                        rs.getInt("qtd_vales_desconto")
+                );
+                carteira.setQuantidadePassagens(
+                        rs.getInt("qtd_passagens")
+                );
 
                 Conta conta = new Conta();
-
-                conta.setId(rs.getInt("CONTA_IDCONTA"));
+                conta.setId(rs.getInt("CONTA_id_conta"));
 
                 carteira.setConta(conta);
-
-                rs.close();
-                ps.close();
-                conexao.close();
 
                 return carteira;
             }
 
-            rs.close();
-            ps.close();
-            conexao.close();
-
-            return null;
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
+        return null;
     }
 
+    public List<Carteira> listar() {
 
-    // Busca a carteira de uma conta específica
-    public Carteira consultarPorConta(Integer idConta) {
+        List<Carteira> carteiras = new ArrayList<>();
 
-        conexao = ConnectionFactory.obterConexao();
-
-        String sql = "SELECT * FROM CARTEIRA WHERE CONTA_IDCONTA = ?";
+        String sql = "SELECT * FROM carteira";
 
         try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
-            ps.setInt(1, idConta);
+            ps = conexao.prepareStatement(sql);
 
             ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
+            while (rs.next()) {
 
                 Carteira carteira = new Carteira();
 
-                carteira.setId(rs.getInt("ID_CARTEIRA"));
-                carteira.setQuantidadePontos(rs.getInt("QTD_PONTOS"));
-                carteira.setValesDesconto(rs.getInt("QTD_VALESDESCONTO"));
-                carteira.setQuantidadePassagens(rs.getInt("QTD_PASSAGENS"));
+                carteira.setId(rs.getInt("id_carteira"));
+                carteira.setQuantidadePontos(rs.getInt("qtd_pontos"));
+                carteira.setValesDesconto(
+                        rs.getInt("qtd_vales_desconto")
+                );
+                carteira.setQuantidadePassagens(
+                        rs.getInt("qtd_passagens")
+                );
 
                 Conta conta = new Conta();
-
-                conta.setId(rs.getInt("CONTA_IDCONTA"));
+                conta.setId(rs.getInt("CONTA_id_conta"));
 
                 carteira.setConta(conta);
 
-                rs.close();
-                ps.close();
-                conexao.close();
-
-                return carteira;
+                carteiras.add(carteira);
             }
 
-            rs.close();
-            ps.close();
-            conexao.close();
-
-            return null;
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
+        return carteiras;
     }
 
+    public void atualizar(Carteira carteira) {
 
-    // Update - Adiciona pontos
-    public void adicionarPontos(Integer idCarteira, Integer quantidade) {
-
-        conexao = ConnectionFactory.obterConexao();
-
-        String sql = "UPDATE CARTEIRA " +
-                "SET QTD_PONTOS = QTD_PONTOS + ? " +
-                "WHERE ID_CARTEIRA = ?";
+        String sql = "UPDATE carteira SET " +
+                "qtd_pontos = ?, qtd_vales_desconto = ?, " +
+                "qtd_passagens = ?, CONTA_id_conta = ? " +
+                "WHERE id_carteira = ?";
 
         try {
+            ps = conexao.prepareStatement(sql);
 
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
-            ps.setInt(1, quantidade);
-            ps.setInt(2, idCarteira);
+            ps.setInt(1, carteira.getQuantidadePontos());
+            ps.setInt(2, carteira.getValesDesconto());
+            ps.setInt(3, carteira.getQuantidadePassagens());
+            ps.setInt(4, carteira.getConta().getId());
+            ps.setInt(5, carteira.getId());
 
             ps.executeUpdate();
 
-            ps.close();
-            conexao.close();
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
+    public void deletar(Integer id) {
 
-    // Update - Remove pontos
-    public void removerPontos(Integer idCarteira, Integer quantidade) {
-
-        conexao = ConnectionFactory.obterConexao();
-
-        String sql = "UPDATE CARTEIRA " +
-                "SET QTD_PONTOS = QTD_PONTOS - ? " +
-                "WHERE ID_CARTEIRA = ?";
+        String sql = "DELETE FROM carteira WHERE id_carteira = ?";
 
         try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
-            ps.setInt(1, quantidade);
-            ps.setInt(2, idCarteira);
-
-            ps.executeUpdate();
-
-            ps.close();
-            conexao.close();
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    // Update - Adiciona passagem
-    public void adicionarPassagem(Integer idCarteira) {
-
-        conexao = ConnectionFactory.obterConexao();
-
-        String sql = "UPDATE CARTEIRA " +
-                "SET QTD_PASSAGENS = QTD_PASSAGENS + 1 " +
-                "WHERE ID_CARTEIRA = ?";
-
-        try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
-            ps.setInt(1, idCarteira);
-
-            ps.executeUpdate();
-
-            ps.close();
-            conexao.close();
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    // Delete - CRUD
-    public void deletarCarteira(Integer id) {
-
-        conexao = ConnectionFactory.obterConexao();
-
-        String sql = "DELETE FROM CARTEIRA WHERE ID_CARTEIRA = ?";
-
-        try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
+            ps = conexao.prepareStatement(sql);
             ps.setInt(1, id);
-
             ps.executeUpdate();
-
-            ps.close();
-            conexao.close();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

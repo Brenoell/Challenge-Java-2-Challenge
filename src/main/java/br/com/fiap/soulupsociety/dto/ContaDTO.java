@@ -1,7 +1,6 @@
 package br.com.fiap.soulupsociety.dto;
 
-import br.com.fiap.soulupsociety.enums.TipoContaEnum;
-
+import br.com.fiap.soulupsociety.models.TipoConta;
 import java.time.LocalDate;
 
 public record ContaDTO(
@@ -10,6 +9,6 @@ public record ContaDTO(
         String email,
         LocalDate dataCriacao,
         String bio,
-        TipoContaEnum TipoConta
+        TipoConta tipoConta
 ) {
 }

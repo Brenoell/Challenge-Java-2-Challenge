@@ -2,7 +2,6 @@ package br.com.fiap.soulupsociety.dao;
 
 import br.com.fiap.soulupsociety.models.Comentario;
 import br.com.fiap.soulupsociety.models.Conta;
-import br.com.fiap.soulupsociety.models.Postagem;
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -14,28 +13,27 @@ import java.util.List;
 
 public class ComentarioDAO {
 
-
     private Connection conexao;
+    private PreparedStatement ps = null;
 
+    public ComentarioDAO() {
+        conexao = ConnectionFactory.obterConexao();
+    }
 
-    // Create / Insert - CRUD
     public void cadastrar(Comentario comentario) {
 
-        conexao = ConnectionFactory.obterConexao();
-
-        String sql = "INSERT INTO COMENTARIO " +
-                "(ID_COMENTARIO, DS_COMENTARIO, DT_COMENTARIO, " +
-                "CONTA_IDCONTA, POSTAGEM_IDPOSTAGEM) " +
-                "VALUES (SEQ_COMENTARIO.NEXTVAL, ?, ?, ?, ?)";
+        String sql = "INSERT INTO comentario " +
+                "(ds_comentario, dt_comentario, qtd_curtidas, img_comentario, CONTA_id_conta) " +
+                "VALUES (?, ?, ?, ?, ?)";
 
         try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
+            ps = conexao.prepareStatement(sql);
 
             ps.setString(1, comentario.getTextoComentario());
             ps.setDate(2, Date.valueOf(comentario.getDataComentario()));
-            ps.setInt(3, comentario.getPostagem().getId());
-            ps.setInt(4, comentario.getPostagem().getId());
+            ps.setInt(3, comentario.getQuantidadeCurtidas());
+            ps.setBytes(4, comentario.getImagem());
+            ps.setInt(5, comentario.getConta().getId());
 
             ps.executeUpdate();
 
@@ -44,19 +42,12 @@ public class ComentarioDAO {
         }
     }
 
-
-    // Read / Select - CRUD
     public Comentario consultarPorId(Integer id) {
 
-        conexao = ConnectionFactory.obterConexao();
-
-        String sql = "SELECT * FROM COMENTARIO " +
-                "WHERE ID_COMENTARIO = ?";
+        String sql = "SELECT * FROM comentario WHERE id_comentario = ?";
 
         try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
+            ps = conexao.prepareStatement(sql);
             ps.setInt(1, id);
 
             ResultSet rs = ps.executeQuery();
@@ -65,57 +56,42 @@ public class ComentarioDAO {
 
                 Comentario comentario = new Comentario();
 
-                comentario.setId(rs.getInt("ID_COMENTARIO"));
+                comentario.setId(rs.getInt("id_comentario"));
                 comentario.setTextoComentario(
-                        rs.getString("DS_COMENTARIO")
+                        rs.getString("ds_comentario")
                 );
-
                 comentario.setDataComentario(
-                        rs.getDate("DT_COMENTARIO").toLocalDate()
+                        rs.getDate("dt_comentario").toLocalDate()
+                );
+                comentario.setQuantidadeCurtidas(
+                        rs.getInt("qtd_curtidas")
+                );
+                comentario.setImagem(
+                        rs.getBytes("img_comentario")
                 );
 
                 Conta conta = new Conta();
-                conta.setId(
-                        rs.getInt("CONTA_IDCONTA")
-                );
-
+                conta.setId(rs.getInt("CONTA_id_conta"));
                 comentario.setConta(conta);
-
-                Postagem postagem = new Postagem();
-                postagem.setId(
-                        rs.getInt("POSTAGEM_IDPOSTAGEM")
-                );
-
-                comentario.setPostagem(postagem);
 
                 return comentario;
             }
 
-            return null;
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
+        return null;
     }
 
-
-    // Consulta comentários pelo autor
-    public List<Comentario> consultarPorAutor(String nomeConta) {
-
-        conexao = ConnectionFactory.obterConexao();
+    public List<Comentario> listar() {
 
         List<Comentario> comentarios = new ArrayList<>();
 
-        String sql = "SELECT C.* FROM COMENTARIO C " +
-                "INNER JOIN CONTA CO " +
-                "ON C.CONTA_IDCONTA = CO.ID_CONTA " +
-                "WHERE CO.NM_CONTA = ?";
+        String sql = "SELECT * FROM comentario";
 
         try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
-            ps.setString(1, nomeConta);
+            ps = conexao.prepareStatement(sql);
 
             ResultSet rs = ps.executeQuery();
 
@@ -123,65 +99,50 @@ public class ComentarioDAO {
 
                 Comentario comentario = new Comentario();
 
-                comentario.setId(
-                        rs.getInt("ID_COMENTARIO")
-                );
-
+                comentario.setId(rs.getInt("id_comentario"));
                 comentario.setTextoComentario(
-                        rs.getString("DS_COMENTARIO")
+                        rs.getString("ds_comentario")
                 );
-
                 comentario.setDataComentario(
-                        rs.getDate("DT_COMENTARIO").toLocalDate()
+                        rs.getDate("dt_comentario").toLocalDate()
+                );
+                comentario.setQuantidadeCurtidas(
+                        rs.getInt("qtd_curtidas")
+                );
+                comentario.setImagem(
+                        rs.getBytes("img_comentario")
                 );
 
                 Conta conta = new Conta();
-                conta.setId(
-                        rs.getInt("CONTA_IDCONTA")
-                );
-
+                conta.setId(rs.getInt("CONTA_id_conta"));
                 comentario.setConta(conta);
-
-                Postagem postagem = new Postagem();
-                postagem.setId(
-                        rs.getInt("POSTAGEM_IDPOSTAGEM")
-                );
-
-                comentario.setPostagem(postagem);
 
                 comentarios.add(comentario);
             }
 
-            return comentarios;
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
+        return comentarios;
     }
 
+    public void atualizar(Comentario comentario) {
 
-    // Update - CRUD
-    public void atualizarComentario(Comentario comentario) {
-
-        conexao = ConnectionFactory.obterConexao();
-
-        String sql = "UPDATE COMENTARIO " +
-                "SET DS_COMENTARIO = ? " +
-                "WHERE ID_COMENTARIO = ?";
+        String sql = "UPDATE comentario SET " +
+                "ds_comentario = ?, dt_comentario = ?, qtd_curtidas = ?, " +
+                "img_comentario = ?, CONTA_id_conta = ? " +
+                "WHERE id_comentario = ?";
 
         try {
+            ps = conexao.prepareStatement(sql);
 
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
-            ps.setString(
-                    1,
-                    comentario.getTextoComentario()
-            );
-
-            ps.setInt(
-                    2,
-                    comentario.getId()
-            );
+            ps.setString(1, comentario.getTextoComentario());
+            ps.setDate(2, Date.valueOf(comentario.getDataComentario()));
+            ps.setInt(3, comentario.getQuantidadeCurtidas());
+            ps.setBytes(4, comentario.getImagem());
+            ps.setInt(5, comentario.getConta().getId());
+            ps.setInt(6, comentario.getId());
 
             ps.executeUpdate();
 
@@ -190,24 +151,13 @@ public class ComentarioDAO {
         }
     }
 
+    public void deletar(Integer id) {
 
-    // Delete - CRUD
-    public void deletarComentario(Comentario comentario) {
-
-        conexao = ConnectionFactory.obterConexao();
-
-        String sql = "DELETE FROM COMENTARIO " +
-                "WHERE ID_COMENTARIO = ?";
+        String sql = "DELETE FROM comentario WHERE id_comentario = ?";
 
         try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
-            ps.setInt(
-                    1,
-                    comentario.getId()
-            );
-
+            ps = conexao.prepareStatement(sql);
+            ps.setInt(1, id);
             ps.executeUpdate();
 
         } catch (SQLException e) {

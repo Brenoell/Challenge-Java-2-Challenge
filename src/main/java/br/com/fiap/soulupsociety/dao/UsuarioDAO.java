@@ -2,24 +2,31 @@ package br.com.fiap.soulupsociety.dao;
 
 import br.com.fiap.soulupsociety.models.Usuario;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class UsuarioDAO {
 
-    // Create / Insert - CRUD
-    public void cadastrar(Usuario usuario) {
-        Connection conexao = ConnectionFactory.obterConexao();
-        String sql = """
-                INSERT INTO USUARIO
-                    (ID_USUARIO, NM_USUARIO, DT_NASCIMENTO, NUM_CPF)
-                VALUES
-                    (SEQ_USUARIO.NEXTVAL, ?, ?, ?)
-                
-                """;
-        try {
+    private Connection conexao;
+    private PreparedStatement ps = null;
 
-            PreparedStatement ps = conexao.prepareStatement(sql);
+    public UsuarioDAO() {
+        conexao = ConnectionFactory.obterConexao();
+    }
+
+    public void cadastrar(Usuario usuario) {
+
+        String sql = "INSERT INTO usuario " +
+                "(nm_usuario, dt_nascimento, num_cpf) " +
+                "VALUES (?, ?, ?)";
+
+        try {
+            ps = conexao.prepareStatement(sql);
 
             ps.setString(1, usuario.getNome());
             ps.setDate(2, Date.valueOf(usuario.getDataNascimento()));
@@ -32,21 +39,12 @@ public class UsuarioDAO {
         }
     }
 
-    // Read / Select - CRUD
     public Usuario consultarPorId(Integer id) {
 
-        Connection conexao = ConnectionFactory.obterConexao();
-
-        String sql = """
-        SELECT *
-        FROM USUARIO
-        WHERE ID_USUARIO = ?
-        """;
+        String sql = "SELECT * FROM usuario WHERE id_usuario = ?";
 
         try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
+            ps = conexao.prepareStatement(sql);
             ps.setInt(1, id);
 
             ResultSet rs = ps.executeQuery();
@@ -55,12 +53,12 @@ public class UsuarioDAO {
 
                 Usuario usuario = new Usuario();
 
-                usuario.setId(rs.getInt("ID_USUARIO"));
-                usuario.setNome(rs.getString("NM_USUARIO"));
+                usuario.setId(rs.getInt("id_usuario"));
+                usuario.setNome(rs.getString("nm_usuario"));
                 usuario.setDataNascimento(
-                        rs.getDate("DT_NASCIMENTO").toLocalDate()
+                        rs.getDate("dt_nascimento").toLocalDate()
                 );
-                usuario.setNumeroCpf(rs.getLong("NUM_CPF"));
+                usuario.setNumeroCpf(rs.getLong("num_cpf"));
 
                 return usuario;
             }
@@ -72,59 +70,46 @@ public class UsuarioDAO {
         return null;
     }
 
-    // Consulta específica
-    public Usuario consultarPorCpf(Long numeroCpf) {
-        Connection conexao = ConnectionFactory.obterConexao();
+    public List<Usuario> listar() {
 
-        String sql = """
-            SELECT *
-            FROM USUARIO
-            WHERE NUM_CPF = ?
-            """;
+        List<Usuario> usuarios = new ArrayList<>();
+
+        String sql = "SELECT * FROM usuario";
+
         try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
-            ps.setLong(1, numeroCpf);
+            ps = conexao.prepareStatement(sql);
 
             ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
+            while (rs.next()) {
 
                 Usuario usuario = new Usuario();
 
-                usuario.setId(rs.getInt("ID_USUARIO"));
-                usuario.setNome(rs.getString("NM_USUARIO"));
+                usuario.setId(rs.getInt("id_usuario"));
+                usuario.setNome(rs.getString("nm_usuario"));
                 usuario.setDataNascimento(
-                        rs.getDate("DT_NASCIMENTO").toLocalDate()
+                        rs.getDate("dt_nascimento").toLocalDate()
                 );
-                usuario.setNumeroCpf(rs.getLong("NUM_CPF"));
+                usuario.setNumeroCpf(rs.getLong("num_cpf"));
 
-                return usuario;
+                usuarios.add(usuario);
             }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return null;
+
+        return usuarios;
     }
 
-    // Update - CRUD
-    public void atualizarUsuario(Usuario usuario) {
+    public void atualizar(Usuario usuario) {
 
-        Connection conexao = ConnectionFactory.obterConexao();
-
-        String sql = """
-            UPDATE USUARIO
-            SET NM_USUARIO = ?,
-                DT_NASCIMENTO = ?,
-                NUM_CPF = ?
-            WHERE ID_USUARIO = ?
-            """;
+        String sql = "UPDATE usuario SET " +
+                "nm_usuario = ?, dt_nascimento = ?, num_cpf = ? " +
+                "WHERE id_usuario = ?";
 
         try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
+            ps = conexao.prepareStatement(sql);
 
             ps.setString(1, usuario.getNome());
             ps.setDate(2, Date.valueOf(usuario.getDataNascimento()));
@@ -137,22 +122,14 @@ public class UsuarioDAO {
             throw new RuntimeException(e);
         }
     }
-    // Delete - CRUD
-    public void deletarUsuario(Integer id) {
 
-        Connection conexao = ConnectionFactory.obterConexao();
+    public void deletar(Integer id) {
 
-        String sql = """
-            DELETE FROM USUARIO
-            WHERE ID_USUARIO = ?
-            """;
+        String sql = "DELETE FROM usuario WHERE id_usuario = ?";
 
         try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
+            ps = conexao.prepareStatement(sql);
             ps.setInt(1, id);
-
             ps.executeUpdate();
 
         } catch (SQLException e) {

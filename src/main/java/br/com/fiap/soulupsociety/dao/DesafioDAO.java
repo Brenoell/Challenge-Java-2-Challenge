@@ -12,91 +12,38 @@ import java.util.List;
 public class DesafioDAO {
 
     private Connection conexao;
+    private PreparedStatement ps = null;
 
+    public DesafioDAO() {
+        conexao = ConnectionFactory.obterConexao();
+    }
 
-    // Cadastro de desafio pelo moderador
     public void cadastrar(Desafio desafio) {
 
-        conexao = ConnectionFactory.obterConexao();
-
-        String sql = "INSERT INTO DESAFIO " +
-                "(ID_DESAFIO, NM_DESAFIO, DS_DESAFIO, QTD_PONTOSDADOS) " +
-                "VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO desafio " +
+                "(nm_desafio, ds_desafio, qtd_pontos_dados) " +
+                "VALUES (?, ?, ?)";
 
         try {
+            ps = conexao.prepareStatement(sql);
 
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
-            ps.setInt(1, desafio.getId());
-            ps.setString(2, desafio.getNome());
-            ps.setString(3, desafio.getDescricaoDesafio());
-            ps.setInt(4, desafio.getQtdPontos());
+            ps.setString(1, desafio.getNome());
+            ps.setString(2, desafio.getDescricaoDesafio());
+            ps.setInt(3, desafio.getQtdPontos());
 
             ps.executeUpdate();
 
-            ps.close();
-            conexao.close();
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-
-    // Lista todos os desafios
-    public List<Desafio> listarDesafios() {
-
-        conexao = ConnectionFactory.obterConexao();
-
-        List<Desafio> desafios = new ArrayList<>();
-
-        String sql = "SELECT * FROM DESAFIO";
-
-        try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-
-                Desafio desafio = new Desafio();
-
-                desafio.setId(rs.getInt("ID_DESAFIO"));
-                desafio.setNome(rs.getString("NM_DESAFIO"));
-                desafio.setDescricaoDesafio(
-                        rs.getString("DS_DESAFIO")
-                );
-                desafio.setQtdPontos(
-                        rs.getInt("QTD_PONTOSDADOS")
-                );
-
-                desafios.add(desafio);
-            }
-
-            rs.close();
-            ps.close();
-            conexao.close();
-
-            return desafios;
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    // Consulta um desafio pelo ID
     public Desafio consultarPorId(Integer id) {
 
-        conexao = ConnectionFactory.obterConexao();
-
-        String sql = "SELECT * FROM DESAFIO WHERE ID_DESAFIO = ?";
+        String sql = "SELECT * FROM desafio WHERE id_desafio = ?";
 
         try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
+            ps = conexao.prepareStatement(sql);
             ps.setInt(1, id);
 
             ResultSet rs = ps.executeQuery();
@@ -105,55 +52,59 @@ public class DesafioDAO {
 
                 Desafio desafio = new Desafio();
 
-                desafio.setId(
-                        rs.getInt("ID_DESAFIO")
-                );
-
-                desafio.setNome(
-                        rs.getString("NM_DESAFIO")
-                );
-
-                desafio.setDescricaoDesafio(
-                        rs.getString("DS_DESAFIO")
-                );
-
-                desafio.setQtdPontos(
-                        rs.getInt("QTD_PONTOSDADOS")
-                );
-
-                rs.close();
-                ps.close();
-                conexao.close();
+                desafio.setId(rs.getInt("id_desafio"));
+                desafio.setNome(rs.getString("nm_desafio"));
+                desafio.setDescricaoDesafio(rs.getString("ds_desafio"));
+                desafio.setQtdPontos(rs.getInt("qtd_pontos_dados"));
 
                 return desafio;
             }
 
-            rs.close();
-            ps.close();
-            conexao.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
 
-            return null;
+        return null;
+    }
+
+    public List<Desafio> listar() {
+
+        List<Desafio> desafios = new ArrayList<>();
+
+        String sql = "SELECT * FROM desafio";
+
+        try {
+            ps = conexao.prepareStatement(sql);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                Desafio desafio = new Desafio();
+
+                desafio.setId(rs.getInt("id_desafio"));
+                desafio.setNome(rs.getString("nm_desafio"));
+                desafio.setDescricaoDesafio(rs.getString("ds_desafio"));
+                desafio.setQtdPontos(rs.getInt("qtd_pontos_dados"));
+
+                desafios.add(desafio);
+            }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
+        return desafios;
     }
 
-
-    // Atualização de desafio pelo moderador
     public void atualizar(Desafio desafio) {
 
-        conexao = ConnectionFactory.obterConexao();
-
-        String sql = "UPDATE DESAFIO SET " +
-                "NM_DESAFIO = ?, " +
-                "DS_DESAFIO = ?, " +
-                "QTD_PONTOSDADOS = ? " +
-                "WHERE ID_DESAFIO = ?";
+        String sql = "UPDATE desafio SET " +
+                "nm_desafio = ?, ds_desafio = ?, qtd_pontos_dados = ? " +
+                "WHERE id_desafio = ?";
 
         try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
+            ps = conexao.prepareStatement(sql);
 
             ps.setString(1, desafio.getNome());
             ps.setString(2, desafio.getDescricaoDesafio());
@@ -162,32 +113,19 @@ public class DesafioDAO {
 
             ps.executeUpdate();
 
-            ps.close();
-            conexao.close();
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-
-    // Exclusão de desafio pelo moderador
     public void deletar(Integer id) {
 
-        conexao = ConnectionFactory.obterConexao();
-
-        String sql = "DELETE FROM DESAFIO WHERE ID_DESAFIO = ?";
+        String sql = "DELETE FROM desafio WHERE id_desafio = ?";
 
         try {
-
-            PreparedStatement ps = conexao.prepareStatement(sql);
-
+            ps = conexao.prepareStatement(sql);
             ps.setInt(1, id);
-
             ps.executeUpdate();
-
-            ps.close();
-            conexao.close();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);

@@ -14,7 +14,7 @@ public class ContaMapper {
         conta.setEmail(dto.email());
         conta.setDataCriacao(dto.dataCriacao());
         conta.setBio(dto.bio());
-        conta.setTipoConta(dto.TipoConta());
+        conta.setTipoConta(dto.tipoConta());
 
         return conta;
     }

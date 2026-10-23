@@ -2,56 +2,38 @@ package br.com.fiap.soulupsociety.controller;
 
 import br.com.fiap.soulupsociety.models.Usuario;
 import br.com.fiap.soulupsociety.service.UsuarioService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
 
-    private UsuarioService usuarioService;
+    private UsuarioService service = new UsuarioService();
 
-    public UsuarioController() {
-        usuarioService = new UsuarioService();
+    @PostMapping
+    public void cadastrar(@RequestBody Usuario usuario) {
+        service.cadastrar(usuario);
     }
 
-    @PostMapping("/criar")
-    public ResponseEntity<String> cadastrar(@RequestBody Usuario usuario) {
-
-        try {
-            usuarioService.cadastrar(usuario);
-
-            return ResponseEntity.status(HttpStatus.CREATED).body("CADASTRO FEITO!");
-        }catch (IllegalArgumentException e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("CADASTRO NAO CONCLUIDO");
-        }
+    @GetMapping
+    public List<Usuario> listar() {
+        return service.listar();
     }
 
-    @GetMapping("/procurarPorId/{id}")
-    public Usuario consultarPorId(@PathVariable Integer id) {
-
-        return usuarioService.consultarPorId(id);
+    @GetMapping("/{id}")
+    public Usuario consultar(@PathVariable Integer id) {
+        return service.consultarPorId(id);
     }
 
-    @GetMapping("/procurarPorCpf/{cpf}")
-    public Usuario consultarPorCpj(@PathVariable Long cpf){
-        return usuarioService.consultarPorCpf(cpf);
+    @PutMapping
+    public void atualizar(@RequestBody Usuario usuario) {
+        service.atualizar(usuario);
     }
 
-    @DeleteMapping("/deletar/{id}")
-    public void deletarUsuarioPorId(@PathVariable Integer id){
-        usuarioService.deletarUsuario(id);
+    @DeleteMapping("/{id}")
+    public void deletar(@PathVariable Integer id) {
+        service.deletar(id);
     }
-
-    @PutMapping("/atualizarUsuario/{id}")
-    public void atualizarUsuario(
-            @RequestBody Usuario usuario,
-            @PathVariable Integer id) {
-
-        usuario.setId(id);
-
-        usuarioService.atualizarUsuario(usuario);
-    }
-
 }

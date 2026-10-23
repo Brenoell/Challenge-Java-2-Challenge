@@ -12,7 +12,6 @@ public class PostagemMapper {
         postagem.setId(dto.id());
         postagem.setDescricaoTexto(dto.descricaoTexto());
         postagem.setQuantidadeCurtidas(dto.quantidadeCurtidas());
-        postagem.setCompartilhamentos(dto.compartilhamentos());
 
         return postagem;
     }
@@ -22,8 +21,7 @@ public class PostagemMapper {
         PostagemDTO dto = new PostagemDTO(
                 postagem.getId(),
                 postagem.getDescricaoTexto(),
-                postagem.getQuantidadeCurtidas(),
-                postagem.getCompartilhamentos()
+                postagem.getQuantidadeCurtidas()
         );
 
         return dto;
