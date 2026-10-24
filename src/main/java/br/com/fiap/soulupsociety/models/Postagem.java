@@ -2,9 +2,7 @@ package br.com.fiap.soulupsociety.models;
 
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
-import java.util.List;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -12,11 +10,8 @@ public class Postagem {
 
     private Integer id;
     private String descricaoTexto;
-    private LocalDateTime dataPostagem;
+    private LocalDate dataPostagem;
     private Integer quantidadeCurtidas;
     private byte[] imagem;
-
     private Conta conta;
-    private List<Comentario> Comentario;
-
 }
