@@ -4,11 +4,11 @@ package br.com.fiap.soulupsociety.service;
 import br.com.fiap.soulupsociety.dao.CarteiraDAO;
 import br.com.fiap.soulupsociety.models.Carteira;
 
-import java.util.List;
+
 
 public class CarteiraService {
 
-    private CarteiraDAO dao = new CarteiraDAO();
+    private final CarteiraDAO dao = new CarteiraDAO();
 
     // CREATE - Cadastrar carteira
     public void cadastrar(Carteira carteira) {
@@ -48,11 +48,6 @@ public class CarteiraService {
         }
 
         return dao.consultarPorId(id);
-    }
-
-    // READ - Listar carteiras
-    public List<Carteira> listar() {
-        return dao.listar();
     }
 
     // UPDATE - Adicionar pontos
