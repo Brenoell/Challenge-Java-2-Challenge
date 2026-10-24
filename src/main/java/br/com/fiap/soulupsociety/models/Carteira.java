@@ -9,7 +9,7 @@ public class Carteira {
 
     private Integer id;
     private Integer quantidadePontos;
-    private Integer valesDesconto;
     private Integer quantidadePassagens;
+
     private Conta conta;
 }

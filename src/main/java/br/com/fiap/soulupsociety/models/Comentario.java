@@ -13,5 +13,7 @@ public class Comentario {
     private LocalDate dataComentario;
     private Integer quantidadeCurtidas;
     private byte[] imagem;
+
     private Conta conta;
+    private Postagem postagem;
 }

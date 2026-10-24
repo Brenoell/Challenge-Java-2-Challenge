@@ -12,4 +12,5 @@ public class Usuario {
     private String nome;
     private LocalDate dataNascimento;
     private Long numeroCpf;
+
 }
