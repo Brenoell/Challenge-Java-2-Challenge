@@ -1,3 +1,4 @@
+
 package br.com.fiap.soulupsociety.dao;
 
 import br.com.fiap.soulupsociety.models.Carteira;
@@ -19,19 +20,19 @@ public class CarteiraDAO {
         conexao = ConnectionFactory.obterConexao();
     }
 
+
     public void cadastrar(Carteira carteira) {
 
         String sql = "INSERT INTO carteira " +
-                "(qtd_pontos, qtd_vales_desconto, qtd_passagens, CONTA_id_conta) " +
-                "VALUES (?, ?, ?, ?)";
+                "(qtd_pontos, qtd_passagens, CONTA_id_conta) " +
+                "VALUES (?, ?, ?)";
 
         try {
             ps = conexao.prepareStatement(sql);
 
             ps.setInt(1, carteira.getQuantidadePontos());
-            ps.setInt(2, carteira.getValesDesconto());
-            ps.setInt(3, carteira.getQuantidadePassagens());
-            ps.setInt(4, carteira.getConta().getId());
+            ps.setInt(2, carteira.getQuantidadePassagens());
+            ps.setInt(3, carteira.getConta().getId());
 
             ps.executeUpdate();
 
@@ -39,6 +40,7 @@ public class CarteiraDAO {
             throw new RuntimeException(e);
         }
     }
+
 
     public Carteira consultarPorId(Integer id) {
 
@@ -51,24 +53,7 @@ public class CarteiraDAO {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-
-                Carteira carteira = new Carteira();
-
-                carteira.setId(rs.getInt("id_carteira"));
-                carteira.setQuantidadePontos(rs.getInt("qtd_pontos"));
-                carteira.setValesDesconto(
-                        rs.getInt("qtd_vales_desconto")
-                );
-                carteira.setQuantidadePassagens(
-                        rs.getInt("qtd_passagens")
-                );
-
-                Conta conta = new Conta();
-                conta.setId(rs.getInt("CONTA_id_conta"));
-
-                carteira.setConta(conta);
-
-                return carteira;
+                return montarCarteira(rs);
             }
 
         } catch (SQLException e) {
@@ -77,6 +62,7 @@ public class CarteiraDAO {
 
         return null;
     }
+
 
     public List<Carteira> listar() {
 
@@ -90,23 +76,7 @@ public class CarteiraDAO {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-
-                Carteira carteira = new Carteira();
-
-                carteira.setId(rs.getInt("id_carteira"));
-                carteira.setQuantidadePontos(rs.getInt("qtd_pontos"));
-                carteira.setValesDesconto(
-                        rs.getInt("qtd_vales_desconto")
-                );
-                carteira.setQuantidadePassagens(
-                        rs.getInt("qtd_passagens")
-                );
-
-                Conta conta = new Conta();
-                conta.setId(rs.getInt("CONTA_id_conta"));
-
-                carteira.setConta(conta);
-
+                Carteira carteira = montarCarteira(rs);
                 carteiras.add(carteira);
             }
 
@@ -117,21 +87,22 @@ public class CarteiraDAO {
         return carteiras;
     }
 
+
     public void atualizar(Carteira carteira) {
 
         String sql = "UPDATE carteira SET " +
-                "qtd_pontos = ?, qtd_vales_desconto = ?, " +
-                "qtd_passagens = ?, CONTA_id_conta = ? " +
+                "qtd_pontos = ?, " +
+                "qtd_passagens = ?, " +
+                "CONTA_id_conta = ? " +
                 "WHERE id_carteira = ?";
 
         try {
             ps = conexao.prepareStatement(sql);
 
             ps.setInt(1, carteira.getQuantidadePontos());
-            ps.setInt(2, carteira.getValesDesconto());
-            ps.setInt(3, carteira.getQuantidadePassagens());
-            ps.setInt(4, carteira.getConta().getId());
-            ps.setInt(5, carteira.getId());
+            ps.setInt(2, carteira.getQuantidadePassagens());
+            ps.setInt(3, carteira.getConta().getId());
+            ps.setInt(4, carteira.getId());
 
             ps.executeUpdate();
 
@@ -140,6 +111,7 @@ public class CarteiraDAO {
         }
     }
 
+    // DELETE - Deletar carteira
     public void deletar(Integer id) {
 
         String sql = "DELETE FROM carteira WHERE id_carteira = ?";
@@ -147,10 +119,28 @@ public class CarteiraDAO {
         try {
             ps = conexao.prepareStatement(sql);
             ps.setInt(1, id);
+
             ps.executeUpdate();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+    private Carteira montarCarteira(ResultSet rs) throws SQLException {
+
+        Carteira carteira = new Carteira();
+
+        carteira.setId(rs.getInt("id_carteira"));
+        carteira.setQuantidadePontos(rs.getInt("qtd_pontos"));
+        carteira.setQuantidadePassagens(rs.getInt("qtd_passagens"));
+
+        Conta conta = new Conta();
+        conta.setId(rs.getInt("CONTA_id_conta"));
+
+        carteira.setConta(conta);
+
+        return carteira;
     }
 }
