@@ -16,7 +16,7 @@ import java.util.List;
 
 public class ContaDAO {
 
-    private Connection conexao;
+    private final Connection conexao;
 
     public ContaDAO() {
         conexao = ConnectionFactory.obterConexao();
@@ -25,7 +25,6 @@ public class ContaDAO {
 
     public void cadastrar(Conta conta) {
 
-        // Define automaticamente a data atual
         conta.setDataCriacao(LocalDate.now());
 
         String sql = "INSERT INTO conta " +
