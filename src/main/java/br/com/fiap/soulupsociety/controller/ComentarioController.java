@@ -6,11 +6,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/comentarios")
 public class ComentarioController {
 
-    private ComentarioService service = new ComentarioService();
+    private final ComentarioService service = new ComentarioService();
 
     @PostMapping
     public void cadastrar(@RequestBody Comentario comentario) {

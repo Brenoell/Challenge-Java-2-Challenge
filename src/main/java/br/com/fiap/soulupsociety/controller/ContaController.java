@@ -6,11 +6,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/contas")
 public class ContaController {
 
-    private ContaService service = new ContaService();
+    private final ContaService service = new ContaService();
 
     @PostMapping
     public void cadastrar(@RequestBody Conta conta) {

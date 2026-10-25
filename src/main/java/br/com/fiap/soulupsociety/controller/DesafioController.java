@@ -5,14 +5,14 @@ import br.com.fiap.soulupsociety.service.DesafioService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/desafios")
 public class DesafioController {
 
-    private DesafioService service = new DesafioService();
+    private final DesafioService service = new DesafioService();
 
-    @PostMapping
+    @PostMapping("/cadastrar")
     public void cadastrar(@RequestBody Desafio desafio) {
         service.cadastrar(desafio);
     }
