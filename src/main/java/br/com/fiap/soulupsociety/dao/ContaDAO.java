@@ -1,8 +1,6 @@
-
 package br.com.fiap.soulupsociety.dao;
 
 import br.com.fiap.soulupsociety.models.Conta;
-import br.com.fiap.soulupsociety.models.TipoConta;
 import br.com.fiap.soulupsociety.models.Usuario;
 
 import java.sql.Connection;
@@ -18,29 +16,27 @@ public class ContaDAO {
 
     private final Connection conexao;
 
-
     public ContaDAO() {
         conexao = ConnectionFactory.obterConexao();
     }
-
 
     public void cadastrar(Conta conta) {
 
         conta.setDataCriacao(LocalDate.now());
 
         String sql = "INSERT INTO conta " +
-                "(nm_conta, ds_email, dt_criacao, ds_bio, " +
-                "USUARIO_id_usuario, TIPO_CONTA_id_tipo_conta) " +
+                "(nm_conta, ds_email, ds_senha, dt_criacao, ds_bio, " +
+                "USUARIO_id_usuario) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setString(1, conta.getNomeConta());
             ps.setString(2, conta.getEmail());
-            ps.setDate(3, Date.valueOf(conta.getDataCriacao()));
-            ps.setString(4, conta.getBio());
-            ps.setInt(5, conta.getUsuario().getId());
-            ps.setInt(6, conta.getTipoConta().getId());
+            ps.setString(3, conta.getSenha());
+            ps.setDate(4, Date.valueOf(conta.getDataCriacao()));
+            ps.setString(5, conta.getBio());
+            ps.setInt(6, conta.getUsuario().getId());
 
             ps.executeUpdate();
 
@@ -49,6 +45,44 @@ public class ContaDAO {
         }
     }
 
+    public Conta login(String email, String senha) {
+
+        String sql = "SELECT * FROM conta " +
+                "WHERE ds_email = ? AND ds_senha = ?";
+
+        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+            ps.setString(2, senha);
+
+            try (ResultSet rs = ps.executeQuery()) {
+
+                if (rs.next()) {
+
+                    Conta conta = new Conta();
+
+                    conta.setId(rs.getInt("id_conta"));
+                    conta.setNomeConta(rs.getString("nm_conta"));
+                    conta.setEmail(rs.getString("ds_email"));
+                    conta.setDataCriacao(
+                            rs.getDate("dt_criacao").toLocalDate()
+                    );
+                    conta.setBio(rs.getString("ds_bio"));
+
+                    Usuario usuario = new Usuario();
+                    usuario.setId(rs.getInt("USUARIO_id_usuario"));
+                    conta.setUsuario(usuario);
+
+                    return conta;
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao realizar login.", e);
+        }
+
+        return null;
+    }
 
     public Conta consultarPorId(Integer id) {
 
@@ -76,12 +110,6 @@ public class ContaDAO {
                     usuario.setId(rs.getInt("USUARIO_id_usuario"));
                     conta.setUsuario(usuario);
 
-                    TipoConta tipoConta = new TipoConta();
-                    tipoConta.setId(
-                            rs.getInt("TIPO_CONTA_id_tipo_conta")
-                    );
-                    conta.setTipoConta(tipoConta);
-
                     return conta;
                 }
             }
@@ -92,7 +120,6 @@ public class ContaDAO {
 
         return null;
     }
-
 
     public List<Conta> listar() {
 
@@ -119,12 +146,6 @@ public class ContaDAO {
                 usuario.setId(rs.getInt("USUARIO_id_usuario"));
                 conta.setUsuario(usuario);
 
-                TipoConta tipoConta = new TipoConta();
-                tipoConta.setId(
-                        rs.getInt("TIPO_CONTA_id_tipo_conta")
-                );
-                conta.setTipoConta(tipoConta);
-
                 contas.add(conta);
             }
 
@@ -135,21 +156,20 @@ public class ContaDAO {
         return contas;
     }
 
-
     public void atualizar(Conta conta) {
 
         String sql = "UPDATE conta SET " +
-                "nm_conta = ?, ds_email = ?, ds_bio = ?, " +
-                "USUARIO_id_usuario = ?, TIPO_CONTA_id_tipo_conta = ? " +
+                "nm_conta = ?, ds_email = ?, ds_senha = ?, ds_bio = ?, " +
+                "USUARIO_id_usuario = ? " +
                 "WHERE id_conta = ?";
 
         try (PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setString(1, conta.getNomeConta());
             ps.setString(2, conta.getEmail());
-            ps.setString(3, conta.getBio());
-            ps.setInt(4, conta.getUsuario().getId());
-            ps.setInt(5, conta.getTipoConta().getId());
+            ps.setString(3, conta.getSenha());
+            ps.setString(4, conta.getBio());
+            ps.setInt(5, conta.getUsuario().getId());
             ps.setInt(6, conta.getId());
 
             ps.executeUpdate();
@@ -158,7 +178,6 @@ public class ContaDAO {
             throw new RuntimeException("Erro ao atualizar conta.", e);
         }
     }
-
 
     public void deletar(Integer id) {
 

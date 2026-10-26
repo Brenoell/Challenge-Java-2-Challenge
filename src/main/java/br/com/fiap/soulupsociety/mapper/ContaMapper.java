@@ -12,9 +12,9 @@ public class ContaMapper {
         conta.setId(dto.id());
         conta.setNomeConta(dto.nomeConta());
         conta.setEmail(dto.email());
+        conta.setSenha(dto.senha());
         conta.setDataCriacao(dto.dataCriacao());
         conta.setBio(dto.bio());
-        conta.setTipoConta(dto.tipoConta());
 
         return conta;
     }
@@ -25,9 +25,9 @@ public class ContaMapper {
                 conta.getId(),
                 conta.getNomeConta(),
                 conta.getEmail(),
+                conta.getSenha(),
                 conta.getDataCriacao(),
-                conta.getBio(),
-                conta.getTipoConta()
+                conta.getBio()
         );
 
         return dto;

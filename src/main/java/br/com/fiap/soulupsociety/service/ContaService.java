@@ -1,4 +1,3 @@
-
 package br.com.fiap.soulupsociety.service;
 
 import br.com.fiap.soulupsociety.dao.ContaDAO;
@@ -41,15 +40,16 @@ public class ContaService {
             );
         }
 
-        if (conta.getDataCriacao() == null) {
+        if (conta.getSenha() == null ||
+                conta.getSenha().trim().isEmpty()) {
             throw new IllegalArgumentException(
-                    "A data de criação é obrigatória."
+                    "A senha é obrigatória."
             );
         }
 
-        if (conta.getDataCriacao().isAfter(LocalDate.now())) {
+        if (conta.getSenha().length() < 6) {
             throw new IllegalArgumentException(
-                    "A data de criação não pode ser futura."
+                    "A senha deve ter pelo menos 6 caracteres."
             );
         }
 
@@ -61,15 +61,35 @@ public class ContaService {
             );
         }
 
-        if (conta.getTipoConta() == null ||
-                conta.getTipoConta().getId() == null ||
-                conta.getTipoConta().getId() <= 0) {
+        dao.cadastrar(conta);
+    }
+
+    // LOGIN
+    public Conta login(String email, String senha) {
+
+        if (email == null ||
+                email.trim().isEmpty()) {
             throw new IllegalArgumentException(
-                    "É necessário informar um tipo de conta válido."
+                    "O e-mail é obrigatório."
             );
         }
 
-        dao.cadastrar(conta);
+        if (senha == null ||
+                senha.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "A senha é obrigatória."
+            );
+        }
+
+        Conta conta = dao.login(email, senha);
+
+        if (conta == null) {
+            throw new IllegalArgumentException(
+                    "E-mail ou senha incorretos."
+            );
+        }
+
+        return conta;
     }
 
     // READ - Consultar conta por ID
@@ -125,6 +145,13 @@ public class ContaService {
             );
         }
 
+        if (conta.getSenha() == null ||
+                conta.getSenha().trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "A senha é obrigatória."
+            );
+        }
+
         if (conta.getDataCriacao() == null) {
             throw new IllegalArgumentException(
                     "A data de criação é obrigatória."
@@ -142,14 +169,6 @@ public class ContaService {
                 conta.getUsuario().getId() <= 0) {
             throw new IllegalArgumentException(
                     "É necessário informar um usuário válido."
-            );
-        }
-
-        if (conta.getTipoConta() == null ||
-                conta.getTipoConta().getId() == null ||
-                conta.getTipoConta().getId() <= 0) {
-            throw new IllegalArgumentException(
-                    "É necessário informar um tipo de conta válido."
             );
         }
 
