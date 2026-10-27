@@ -1,5 +1,6 @@
 package br.com.fiap.soulupsociety.controller;
 
+import br.com.fiap.soulupsociety.dto.LoginDTO;
 import br.com.fiap.soulupsociety.models.Conta;
 import br.com.fiap.soulupsociety.service.ContaService;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,11 @@ public class ContaController {
     @PostMapping
     public void cadastrar(@RequestBody Conta conta) {
         service.cadastrar(conta);
+    }
+
+    @PostMapping("/login")
+    public Conta login(@RequestBody LoginDTO login) {
+        return service.login(login.email(), login.senha());
     }
 
     @GetMapping
