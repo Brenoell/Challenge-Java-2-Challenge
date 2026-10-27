@@ -6,7 +6,7 @@ import br.com.fiap.soulupsociety.service.CarteiraService;
 import org.springframework.web.bind.annotation.*;
 
 
-
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/carteiras")
 public class CarteiraController {
