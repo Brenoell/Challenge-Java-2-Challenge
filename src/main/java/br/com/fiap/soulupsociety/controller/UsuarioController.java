@@ -28,6 +28,11 @@ public class UsuarioController {
         return service.consultarPorId(id);
     }
 
+    @GetMapping("/procurarPorCpf/{cpf}")
+    public Usuario consultarPorCpf(@PathVariable Long cpf) {
+        return service.consultarPorCpf(cpf);
+    }
+
     @PutMapping
     public void atualizar(@RequestBody Usuario usuario) {
         service.atualizar(usuario);

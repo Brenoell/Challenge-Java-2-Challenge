@@ -12,7 +12,7 @@ import java.util.List;
 
 public class UsuarioDAO {
 
-    private Connection conexao;
+    private final Connection conexao;
     private PreparedStatement ps = null;
 
     public UsuarioDAO() {
@@ -65,6 +65,36 @@ public class UsuarioDAO {
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+
+        return null;
+    }
+
+    public Usuario consultarPorCpf(Long cpf) {
+        String sql = "SELECT * FROM USUARIO WHERE NUM_CPF = ?";
+
+        try (Connection conn = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, cpf);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Usuario usuario = new Usuario();
+
+                    usuario.setId(rs.getInt("ID_USUARIO"));
+                    usuario.setNome(rs.getString("NM_USUARIO"));
+                    usuario.setDataNascimento(
+                            rs.getDate("DT_NASCIMENTO").toLocalDate()
+                    );
+                    usuario.setNumeroCpf(rs.getLong("NUM_CPF"));
+
+                    return usuario;
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao consultar usuário pelo CPF.", e);
         }
 
         return null;
