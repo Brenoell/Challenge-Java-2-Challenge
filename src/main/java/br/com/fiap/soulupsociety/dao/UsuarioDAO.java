@@ -19,14 +19,14 @@ public class UsuarioDAO {
         conexao = ConnectionFactory.obterConexao();
     }
 
-    public void cadastrar(Usuario usuario) {
+    public Usuario cadastrar(Usuario usuario) {
 
         String sql = "INSERT INTO usuario " +
                 "(nm_usuario, dt_nascimento, num_cpf) " +
                 "VALUES (?, ?, ?)";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (PreparedStatement ps = conexao.prepareStatement(
+                sql, new String[]{"ID_USUARIO"})) {
 
             ps.setString(1, usuario.getNome());
             ps.setDate(2, Date.valueOf(usuario.getDataNascimento()));
@@ -34,8 +34,16 @@ public class UsuarioDAO {
 
             ps.executeUpdate();
 
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    usuario.setId(rs.getInt(1));
+                }
+            }
+
+            return usuario;
+
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Erro ao cadastrar usuário", e);
         }
     }
 
