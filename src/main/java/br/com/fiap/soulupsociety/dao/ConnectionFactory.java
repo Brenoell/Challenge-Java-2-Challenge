@@ -7,22 +7,19 @@ import java.sql.SQLException;
 public class ConnectionFactory {
 
     public static Connection obterConexao() {
+        String url  = System.getenv("DB_URL");
+        String user = System.getenv("DB_USER");
+        String pass = System.getenv("DB_PASSWORD");
 
-        Connection conexao = null;
+        if (url == null || user == null || pass == null) {
+            throw new IllegalStateException(
+                    "Defina DB_URL, DB_USER e DB_PASSWORD nas variáveis de ambiente.");
+        }
 
         try {
-            conexao = DriverManager.getConnection(
-                    "jdbc:oracle:thin:@oracle.fiap.com.br:1521:orcl",
-                    "RM569961",
-                    "030308"
-
-            );
-            //"RM570916"
-            //"270406"
+            return DriverManager.getConnection(url, user, pass);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-        return conexao;
     }
 }
