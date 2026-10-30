@@ -55,7 +55,6 @@ public class AuthController {
         );
     }
 
-    // Verifica se existe uma sessão autenticada
     @GetMapping("/sessao")
     public ResponseEntity<?> verificarSessao(
             HttpServletRequest request) {
