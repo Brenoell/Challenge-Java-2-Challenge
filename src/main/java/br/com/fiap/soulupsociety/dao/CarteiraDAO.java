@@ -1,4 +1,3 @@
-
 package br.com.fiap.soulupsociety.dao;
 
 import br.com.fiap.soulupsociety.models.Carteira;
@@ -8,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CarteiraDAO {
 
@@ -17,12 +18,10 @@ public class CarteiraDAO {
         conexao = ConnectionFactory.obterConexao();
     }
 
-    // CREATE - Criar carteira
     public void criar(Carteira carteira) {
 
         String sql = "INSERT INTO carteira " +
-                "(qtd_pontos, qtd_vales_desconto, qtd_passagens, " +
-                "CONTA_id_conta) " +
+                "(qtd_pontos, qtd_vales_desconto, qtd_passagens, CONTA_id_conta) " +
                 "VALUES (?, ?, ?, ?)";
 
         try (PreparedStatement ps = conexao.prepareStatement(sql)) {
@@ -35,11 +34,10 @@ public class CarteiraDAO {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao criar carteira.", e);
+            throw new RuntimeException(e);
         }
     }
 
-    // READ - Consultar carteira por ID
     public Carteira consultarPorId(Integer id) {
 
         String sql = "SELECT * FROM carteira WHERE id_carteira = ?";
@@ -48,39 +46,32 @@ public class CarteiraDAO {
 
             ps.setInt(1, id);
 
-            try (ResultSet rs = ps.executeQuery()) {
+            ResultSet rs = ps.executeQuery();
 
-                if (rs.next()) {
+            if (rs.next()) {
 
-                    Carteira carteira = new Carteira();
+                Carteira carteira = new Carteira();
 
-                    carteira.setId(rs.getInt("id_carteira"));
-                    carteira.setQuantidadePontos(
-                            rs.getInt("qtd_pontos")
-                    );
-                    carteira.setValesDesconto(
-                            rs.getInt("qtd_vales_desconto")
-                    );
-                    carteira.setQuantidadePassagens(
-                            rs.getInt("qtd_passagens")
-                    );
+                carteira.setId(rs.getInt("id_carteira"));
+                carteira.setQuantidadePontos(rs.getInt("qtd_pontos"));
+                carteira.setValesDesconto(rs.getInt("qtd_vales_desconto"));
+                carteira.setQuantidadePassagens(rs.getInt("qtd_passagens"));
 
-                    Conta conta = new Conta();
-                    conta.setId(rs.getInt("CONTA_id_conta"));
-                    carteira.setConta(conta);
+                Conta conta = new Conta();
+                conta.setId(rs.getInt("CONTA_id_conta"));
 
-                    return carteira;
-                }
+                carteira.setConta(conta);
+
+                return carteira;
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao consultar carteira.", e);
+            throw new RuntimeException(e);
         }
 
         return null;
     }
 
-    // READ - Consultar carteira por conta
     public Carteira consultarPorConta(Integer idConta) {
 
         String sql = "SELECT * FROM carteira WHERE CONTA_id_conta = ?";
@@ -89,41 +80,66 @@ public class CarteiraDAO {
 
             ps.setInt(1, idConta);
 
-            try (ResultSet rs = ps.executeQuery()) {
+            ResultSet rs = ps.executeQuery();
 
-                if (rs.next()) {
+            if (rs.next()) {
 
-                    Carteira carteira = new Carteira();
+                Carteira carteira = new Carteira();
 
-                    carteira.setId(rs.getInt("id_carteira"));
-                    carteira.setQuantidadePontos(
-                            rs.getInt("qtd_pontos")
-                    );
-                    carteira.setValesDesconto(
-                            rs.getInt("qtd_vales_desconto")
-                    );
-                    carteira.setQuantidadePassagens(
-                            rs.getInt("qtd_passagens")
-                    );
+                carteira.setId(rs.getInt("id_carteira"));
+                carteira.setQuantidadePontos(rs.getInt("qtd_pontos"));
+                carteira.setValesDesconto(rs.getInt("qtd_vales_desconto"));
+                carteira.setQuantidadePassagens(rs.getInt("qtd_passagens"));
 
-                    Conta conta = new Conta();
-                    conta.setId(rs.getInt("CONTA_id_conta"));
-                    carteira.setConta(conta);
+                Conta conta = new Conta();
+                conta.setId(rs.getInt("CONTA_id_conta"));
 
-                    return carteira;
-                }
+                carteira.setConta(conta);
+
+                return carteira;
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(
-                    "Erro ao consultar carteira por conta.", e
-            );
+            throw new RuntimeException(e);
         }
 
         return null;
     }
 
-    // UPDATE - Adicionar pontos
+    public List<Carteira> listar() {
+
+        String sql = "SELECT * FROM carteira";
+
+        List<Carteira> carteiras = new ArrayList<>();
+
+        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                Carteira carteira = new Carteira();
+
+                carteira.setId(rs.getInt("id_carteira"));
+                carteira.setQuantidadePontos(rs.getInt("qtd_pontos"));
+                carteira.setValesDesconto(rs.getInt("qtd_vales_desconto"));
+                carteira.setQuantidadePassagens(rs.getInt("qtd_passagens"));
+
+                Conta conta = new Conta();
+                conta.setId(rs.getInt("CONTA_id_conta"));
+
+                carteira.setConta(conta);
+
+                carteiras.add(carteira);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return carteiras;
+    }
+
     public void adicionarPontos(Integer id, int quantidade) {
 
         String sql = "UPDATE carteira " +
@@ -138,11 +154,28 @@ public class CarteiraDAO {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao adicionar pontos.", e);
+            throw new RuntimeException(e);
         }
     }
 
-    // UPDATE - Remover pontos
+    public void adicionarPontosPorConta(Integer idConta, int quantidade) {
+
+        String sql = "UPDATE carteira " +
+                "SET qtd_pontos = qtd_pontos + ? " +
+                "WHERE CONTA_id_conta = ?";
+
+        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+
+            ps.setInt(1, quantidade);
+            ps.setInt(2, idConta);
+
+            ps.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void removerPontos(Integer id, int quantidade) {
 
         String sql = "UPDATE carteira " +
@@ -159,11 +192,10 @@ public class CarteiraDAO {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao remover pontos.", e);
+            throw new RuntimeException(e);
         }
     }
 
-    // UPDATE - Adicionar vale-desconto
     public void adicionarValesDesconto(Integer id, int quantidade) {
 
         String sql = "UPDATE carteira " +
@@ -178,13 +210,10 @@ public class CarteiraDAO {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException(
-                    "Erro ao adicionar vales-desconto.", e
-            );
+            throw new RuntimeException(e);
         }
     }
 
-    // UPDATE - Remover vale-desconto
     public void removerValesDesconto(Integer id, int quantidade) {
 
         String sql = "UPDATE carteira " +
@@ -201,13 +230,10 @@ public class CarteiraDAO {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException(
-                    "Erro ao remover vales-desconto.", e
-            );
+            throw new RuntimeException(e);
         }
     }
 
-    // UPDATE - Adicionar passagem
     public void adicionarPassagem(Integer id, int quantidade) {
 
         String sql = "UPDATE carteira " +
@@ -222,11 +248,10 @@ public class CarteiraDAO {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao adicionar passagens.", e);
+            throw new RuntimeException(e);
         }
     }
 
-    // DELETE - Deletar carteira
     public void deletar(Integer id) {
 
         String sql = "DELETE FROM carteira WHERE id_carteira = ?";
@@ -237,7 +262,7 @@ public class CarteiraDAO {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao deletar carteira.", e);
+            throw new RuntimeException(e);
         }
     }
 }

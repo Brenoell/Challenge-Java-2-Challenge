@@ -1,10 +1,10 @@
-
 package br.com.fiap.soulupsociety.controller;
 
 import br.com.fiap.soulupsociety.models.Carteira;
 import br.com.fiap.soulupsociety.service.CarteiraService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -20,10 +20,10 @@ public class CarteiraController {
     }
 
     // READ - Listar todas as carteiras
-    //@GetMapping
-    //public List<Carteira> listar() {
-       // return service.listar();
-    //}
+    @GetMapping
+    public List<Carteira> listar() {
+        return service.listar();
+    }
 
     // READ - Consultar carteira por ID
     @GetMapping("/{id}")

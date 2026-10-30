@@ -1,6 +1,6 @@
-
 package br.com.fiap.soulupsociety.service;
 
+import br.com.fiap.soulupsociety.dao.CarteiraDAO;
 import br.com.fiap.soulupsociety.dao.PostagemDAO;
 import br.com.fiap.soulupsociety.models.Postagem;
 
@@ -10,10 +10,10 @@ import java.util.List;
 public class PostagemService {
 
     private final PostagemDAO dao = new PostagemDAO();
+    private final CarteiraDAO carteiraDAO = new CarteiraDAO();
 
     private static final int PONTOS_POR_POSTAGEM = 100;
 
-    // Cadastrar uma postagem
     public void cadastrar(Postagem postagem) {
 
         if (postagem == null) {
@@ -37,22 +37,17 @@ public class PostagemService {
             );
         }
 
-        // A data é definida automaticamente.
         postagem.setDataPostagem(LocalDate.now());
-
-        // Toda postagem começa com zero curtidas.
         postagem.setQuantidadeCurtidas(0);
 
-        // A imagem pode ser nula.
         dao.cadastrar(postagem);
 
-        // Após o cadastro, adicionar 100 pontos à carteira
-        // da conta que publicou.
-        // A integração com a CarteiraService será feita
-        // conforme os métodos existentes no projeto.
+        carteiraDAO.adicionarPontosPorConta(
+                postagem.getConta().getId(),
+                PONTOS_POR_POSTAGEM
+        );
     }
 
-    // Consultar uma postagem
     public Postagem consultar(Integer id) {
 
         if (id == null || id <= 0) {
@@ -72,12 +67,10 @@ public class PostagemService {
         return postagem;
     }
 
-    // Listar postagens
     public List<Postagem> listar() {
         return dao.listar();
     }
 
-    // Atualizar uma postagem
     public void atualizar(Postagem postagem) {
 
         if (postagem == null ||
@@ -103,18 +96,16 @@ public class PostagemService {
             );
         }
 
-        // Preserva a data original, a quantidade de curtidas,
-        // a imagem e a conta da postagem.
         postagem.setDataPostagem(existente.getDataPostagem());
         postagem.setQuantidadeCurtidas(
                 existente.getQuantidadeCurtidas()
         );
+        postagem.setImagem(existente.getImagem());
         postagem.setConta(existente.getConta());
 
         dao.atualizar(postagem);
     }
 
-    // Excluir uma postagem
     public void deletar(Integer id) {
 
         if (id == null || id <= 0) {

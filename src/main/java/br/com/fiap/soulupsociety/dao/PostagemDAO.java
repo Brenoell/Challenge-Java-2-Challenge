@@ -44,7 +44,10 @@ public class PostagemDAO {
 
     public Postagem consultarPorId(Integer id) {
 
-        String sql = "SELECT * FROM postagem WHERE id_postagem = ?";
+        String sql = "SELECT p.*, c.nm_conta " +
+                "FROM postagem p " +
+                "JOIN conta c ON c.id_conta = p.CONTA_id_conta " +
+                "WHERE p.id_postagem = ?";
 
         try {
             ps = conexao.prepareStatement(sql);
@@ -57,19 +60,21 @@ public class PostagemDAO {
                 Postagem postagem = new Postagem();
 
                 postagem.setId(rs.getInt("id_postagem"));
-                postagem.setDescricaoTexto(
-                        rs.getString("ds_postagem")
-                );
+                postagem.setDescricaoTexto(rs.getString("ds_postagem"));
                 postagem.setDataPostagem(
                         rs.getDate("dt_postagem").toLocalDate()
                 );
                 postagem.setQuantidadeCurtidas(
                         rs.getInt("qtd_curtidas")
                 );
-                postagem.setImagem(rs.getBytes("img_postagem"));
+                postagem.setImagem(
+                        rs.getBytes("img_postagem")
+                );
 
                 Conta conta = new Conta();
                 conta.setId(rs.getInt("CONTA_id_conta"));
+                conta.setNomeConta(rs.getString("nm_conta"));
+
                 postagem.setConta(conta);
 
                 return postagem;
@@ -86,7 +91,9 @@ public class PostagemDAO {
 
         List<Postagem> postagens = new ArrayList<>();
 
-        String sql = "SELECT * FROM postagem";
+        String sql = "SELECT p.*, c.nm_conta " +
+                "FROM postagem p " +
+                "JOIN conta c ON c.id_conta = p.CONTA_id_conta";
 
         try {
             ps = conexao.prepareStatement(sql);
@@ -98,19 +105,21 @@ public class PostagemDAO {
                 Postagem postagem = new Postagem();
 
                 postagem.setId(rs.getInt("id_postagem"));
-                postagem.setDescricaoTexto(
-                        rs.getString("ds_postagem")
-                );
+                postagem.setDescricaoTexto(rs.getString("ds_postagem"));
                 postagem.setDataPostagem(
                         rs.getDate("dt_postagem").toLocalDate()
                 );
                 postagem.setQuantidadeCurtidas(
                         rs.getInt("qtd_curtidas")
                 );
-                postagem.setImagem(rs.getBytes("img_postagem"));
+                postagem.setImagem(
+                        rs.getBytes("img_postagem")
+                );
 
                 Conta conta = new Conta();
                 conta.setId(rs.getInt("CONTA_id_conta"));
+                conta.setNomeConta(rs.getString("nm_conta"));
+
                 postagem.setConta(conta);
 
                 postagens.add(postagem);

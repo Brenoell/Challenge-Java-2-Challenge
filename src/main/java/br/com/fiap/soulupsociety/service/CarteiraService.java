@@ -1,10 +1,9 @@
-
 package br.com.fiap.soulupsociety.service;
 
 import br.com.fiap.soulupsociety.dao.CarteiraDAO;
 import br.com.fiap.soulupsociety.models.Carteira;
 
-
+import java.util.List;
 
 public class CarteiraService {
 
@@ -36,6 +35,11 @@ public class CarteiraService {
         }
 
         dao.criar(carteira);
+    }
+
+    // READ - Listar todas as carteiras
+    public List<Carteira> listar() {
+        return dao.listar();
     }
 
     // READ - Consultar carteira por ID

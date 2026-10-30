@@ -1,6 +1,7 @@
 
 package br.com.fiap.soulupsociety.service;
 
+import br.com.fiap.soulupsociety.dao.CarteiraDAO;
 import br.com.fiap.soulupsociety.dao.ComentarioDAO;
 import br.com.fiap.soulupsociety.models.Comentario;
 
@@ -10,20 +11,22 @@ import java.util.List;
 public class ComentarioService {
 
     private final ComentarioDAO dao = new ComentarioDAO();
+    private final CarteiraDAO carteiraDAO = new CarteiraDAO();
 
-    // Cadastrar comentário
+    private static final int PONTOS_POR_COMENTARIO = 50;
+
     public void cadastrar(Comentario comentario) {
 
         if (comentario == null) {
             throw new IllegalArgumentException(
-                    "Não foi possível cadastrar o comentário. Verifique os dados informados."
+                    "Não foi possível cadastrar o comentário."
             );
         }
 
         if (comentario.getTextoComentario() == null ||
                 comentario.getTextoComentario().trim().isEmpty()) {
             throw new IllegalArgumentException(
-                    "Digite um texto para publicar seu comentário."
+                    "O comentário não pode ficar vazio."
             );
         }
 
@@ -31,7 +34,7 @@ public class ComentarioService {
                 comentario.getConta().getId() == null ||
                 comentario.getConta().getId() <= 0) {
             throw new IllegalArgumentException(
-                    "Não foi possível identificar sua conta. Faça login novamente e tente outra vez."
+                    "Informe uma conta válida."
             );
         }
 
@@ -39,126 +42,110 @@ public class ComentarioService {
                 comentario.getPostagem().getId() == null ||
                 comentario.getPostagem().getId() <= 0) {
             throw new IllegalArgumentException(
-                    "Não foi possível identificar a publicação que você deseja comentar."
+                    "Informe uma postagem válida."
             );
         }
 
-        if (comentario.getQuantidadeCurtidas() == null) {
-            comentario.setQuantidadeCurtidas(0);
-        }
-
-        if (comentario.getQuantidadeCurtidas() < 0) {
-            throw new IllegalArgumentException(
-                    "A quantidade de curtidas não pode ser negativa."
-            );
-        }
-
-        if (comentario.getDataComentario() == null) {
-            comentario.setDataComentario(LocalDate.now());
-        }
+        comentario.setDataComentario(LocalDate.now());
+        comentario.setQuantidadeCurtidas(0);
 
         dao.cadastrar(comentario);
+
+        carteiraDAO.adicionarPontosPorConta(
+                comentario.getConta().getId(),
+                PONTOS_POR_COMENTARIO
+        );
     }
 
-    // Consultar comentário
     public Comentario consultar(Integer id) {
 
-        validarId(id);
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException(
+                    "Informe um comentário válido."
+            );
+        }
 
         Comentario comentario = dao.consultarPorId(id);
 
         if (comentario == null) {
             throw new IllegalArgumentException(
-                    "Não encontramos o comentário solicitado."
+                    "Comentário não encontrado."
             );
         }
 
         return comentario;
     }
 
-    // Listar comentários
     public List<Comentario> listar() {
         return dao.listar();
     }
 
-    // Atualizar comentário
     public void atualizar(Comentario comentario) {
 
-        if (comentario == null) {
+        if (comentario == null ||
+                comentario.getId() == null ||
+                comentario.getId() <= 0) {
             throw new IllegalArgumentException(
-                    "Não foi possível atualizar o comentário. Verifique os dados informados."
+                    "Informe um comentário válido para atualizar."
             );
         }
-
-        validarId(comentario.getId());
 
         if (comentario.getTextoComentario() == null ||
                 comentario.getTextoComentario().trim().isEmpty()) {
             throw new IllegalArgumentException(
-                    "Digite um texto para atualizar seu comentário."
+                    "O comentário não pode ficar vazio."
             );
         }
 
-        if (comentario.getQuantidadeCurtidas() == null ||
-                comentario.getQuantidadeCurtidas() < 0) {
+        Comentario existente = dao.consultarPorId(
+                comentario.getId()
+        );
+
+        if (existente == null) {
             throw new IllegalArgumentException(
-                    "A quantidade de curtidas informada é inválida."
+                    "Comentário não encontrado."
             );
         }
 
-        if (comentario.getDataComentario() == null) {
-            throw new IllegalArgumentException(
-                    "Não foi possível identificar a data do comentário."
-            );
-        }
+        comentario.setDataComentario(
+                existente.getDataComentario()
+        );
 
-        if (comentario.getConta() == null ||
-                comentario.getConta().getId() == null ||
-                comentario.getConta().getId() <= 0) {
-            throw new IllegalArgumentException(
-                    "Não foi possível identificar a conta associada ao comentário."
-            );
-        }
+        comentario.setQuantidadeCurtidas(
+                existente.getQuantidadeCurtidas()
+        );
 
-        if (comentario.getPostagem() == null ||
-                comentario.getPostagem().getId() == null ||
-                comentario.getPostagem().getId() <= 0) {
-            throw new IllegalArgumentException(
-                    "Não foi possível identificar a publicação associada ao comentário."
-            );
-        }
+        comentario.setImagem(
+                existente.getImagem()
+        );
 
-        // Confirma que o comentário existe antes de atualizá-lo.
-        if (dao.consultarPorId(comentario.getId()) == null) {
-            throw new IllegalArgumentException(
-                    "Não encontramos o comentário que você deseja atualizar."
-            );
-        }
+        comentario.setConta(
+                existente.getConta()
+        );
+
+        comentario.setPostagem(
+                existente.getPostagem()
+        );
 
         dao.atualizar(comentario);
     }
 
-    // Excluir comentário
     public void deletar(Integer id) {
 
-        validarId(id);
-
-        if (dao.consultarPorId(id) == null) {
+        if (id == null || id <= 0) {
             throw new IllegalArgumentException(
-                    "Não encontramos o comentário que você deseja excluir."
+                    "Informe um comentário válido para excluir."
+            );
+        }
+
+        Comentario comentario = dao.consultarPorId(id);
+
+        if (comentario == null) {
+            throw new IllegalArgumentException(
+                    "Comentário não encontrado."
             );
         }
 
         dao.deletar(id);
-    }
-
-    // Validar ID recebido nas operações
-    private void validarId(Integer id) {
-
-        if (id == null || id <= 0) {
-            throw new IllegalArgumentException(
-                    "O identificador do comentário informado é inválido."
-            );
-        }
     }
 }
