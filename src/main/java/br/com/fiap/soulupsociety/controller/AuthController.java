@@ -1,7 +1,9 @@
 package br.com.fiap.soulupsociety.controller;
 
+import br.com.fiap.soulupsociety.dao.CarteiraDAO;
 import br.com.fiap.soulupsociety.dao.ContaDAO;
 import br.com.fiap.soulupsociety.dto.LoginDTO;
+import br.com.fiap.soulupsociety.models.Carteira;
 import br.com.fiap.soulupsociety.models.Conta;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +24,7 @@ import java.util.Map;
 public class AuthController {
 
     private final ContaDAO contaDAO = new ContaDAO();
+    private final CarteiraDAO carteiraDAO = new CarteiraDAO();
 
     @PostMapping("/login")
     public ResponseEntity<?> login(
@@ -73,6 +76,46 @@ public class AuthController {
                 Map.of(
                         "autenticado", true,
                         "idConta", sessao.getAttribute("idConta")
+                )
+        );
+    }
+
+    // Dados da conta logada: nome, e-mail, pontos e passagens
+    @GetMapping("/me")
+    public ResponseEntity<?> me(HttpServletRequest request) {
+
+        HttpSession sessao = request.getSession(false);
+
+        if (sessao == null ||
+                sessao.getAttribute("idConta") == null) {
+
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("autenticado", false));
+        }
+
+        Integer idConta = (Integer) sessao.getAttribute("idConta");
+
+        Conta conta = contaDAO.consultarPorId(idConta);
+
+        if (conta == null) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("erro", "Conta não encontrada"));
+        }
+
+        Carteira carteira = carteiraDAO.consultarPorConta(idConta);
+
+        int pontos = carteira != null ? carteira.getQuantidadePontos() : 0;
+        int passagens = carteira != null ? carteira.getQuantidadePassagens() : 0;
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "idConta", conta.getId(),
+                        "nome", conta.getNomeConta(),
+                        "email", conta.getEmail(),
+                        "pontos", pontos,
+                        "passagens", passagens
                 )
         );
     }
