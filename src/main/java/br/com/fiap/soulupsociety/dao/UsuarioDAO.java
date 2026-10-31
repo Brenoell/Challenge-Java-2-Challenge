@@ -12,21 +12,15 @@ import java.util.List;
 
 public class UsuarioDAO {
 
-    private final Connection conexao;
-    private PreparedStatement ps = null;
-
-    public UsuarioDAO() {
-        conexao = ConnectionFactory.obterConexao();
-    }
-
     public Usuario cadastrar(Usuario usuario) {
 
         String sql = "INSERT INTO usuario " +
                 "(nm_usuario, dt_nascimento, num_cpf) " +
                 "VALUES (?, ?, ?)";
 
-        try (PreparedStatement ps = conexao.prepareStatement(
-                sql, new String[]{"ID_USUARIO"})) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(
+                     sql, new String[]{"ID_USUARIO"})) {
 
             ps.setString(1, usuario.getNome());
             ps.setDate(2, Date.valueOf(usuario.getDataNascimento()));
@@ -51,8 +45,8 @@ public class UsuarioDAO {
 
         String sql = "SELECT * FROM usuario WHERE id_usuario = ?";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao()) {
+            PreparedStatement ps = conexao.prepareStatement(sql);
             ps.setInt(1, id);
 
             ResultSet rs = ps.executeQuery();
@@ -114,8 +108,8 @@ public class UsuarioDAO {
 
         String sql = "SELECT * FROM usuario";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao()) {
+            PreparedStatement ps = conexao.prepareStatement(sql);
 
             ResultSet rs = ps.executeQuery();
 
@@ -146,8 +140,8 @@ public class UsuarioDAO {
                 "nm_usuario = ?, dt_nascimento = ?, num_cpf = ? " +
                 "WHERE id_usuario = ?";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao()) {
+            PreparedStatement ps = conexao.prepareStatement(sql);
 
             ps.setString(1, usuario.getNome());
             ps.setDate(2, Date.valueOf(usuario.getDataNascimento()));
@@ -165,8 +159,8 @@ public class UsuarioDAO {
 
         String sql = "DELETE FROM usuario WHERE id_usuario = ?";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao()) {
+            PreparedStatement ps = conexao.prepareStatement(sql);
             ps.setInt(1, id);
             ps.executeUpdate();
 

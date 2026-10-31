@@ -54,6 +54,18 @@ public class CarteiraService {
         return dao.consultarPorId(id);
     }
 
+    // READ - Consultar carteira pela conta
+    public Carteira consultarPorConta(Integer idConta) {
+
+        if (idConta == null || idConta <= 0) {
+            throw new IllegalArgumentException(
+                    "O ID da conta deve ser positivo."
+            );
+        }
+
+        return dao.consultarPorConta(idConta);
+    }
+
     // UPDATE - Adicionar pontos
     public void adicionarPontos(Integer id, int quantidade) {
 

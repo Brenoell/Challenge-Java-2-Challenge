@@ -1,4 +1,3 @@
-
 package br.com.fiap.soulupsociety.dao;
 
 import br.com.fiap.soulupsociety.models.Comentario;

@@ -11,12 +11,6 @@ import java.util.List;
 
 public class DesafioDAO {
 
-    private Connection conexao;
-    private PreparedStatement ps = null;
-
-    public DesafioDAO() {
-        conexao = ConnectionFactory.obterConexao();
-    }
 
     public void cadastrar(Desafio desafio) {
 
@@ -24,8 +18,8 @@ public class DesafioDAO {
                 "(nm_desafio, ds_desafio, qtd_pontos_dados) " +
                 "VALUES (?, ?, ?)";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao()) {
+            PreparedStatement ps = conexao.prepareStatement(sql);
 
             ps.setString(1, desafio.getNome());
             ps.setString(2, desafio.getDescricaoDesafio());
@@ -42,8 +36,8 @@ public class DesafioDAO {
 
         String sql = "SELECT * FROM desafio WHERE id_desafio = ?";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao()) {
+            PreparedStatement ps = conexao.prepareStatement(sql);
             ps.setInt(1, id);
 
             ResultSet rs = ps.executeQuery();
@@ -73,8 +67,8 @@ public class DesafioDAO {
 
         String sql = "SELECT * FROM desafio";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao()) {
+            PreparedStatement ps = conexao.prepareStatement(sql);
 
             ResultSet rs = ps.executeQuery();
 
@@ -103,8 +97,8 @@ public class DesafioDAO {
                 "nm_desafio = ?, ds_desafio = ?, qtd_pontos_dados = ? " +
                 "WHERE id_desafio = ?";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao()) {
+            PreparedStatement ps = conexao.prepareStatement(sql);
 
             ps.setString(1, desafio.getNome());
             ps.setString(2, desafio.getDescricaoDesafio());
@@ -122,8 +116,8 @@ public class DesafioDAO {
 
         String sql = "DELETE FROM desafio WHERE id_desafio = ?";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao()) {
+            PreparedStatement ps = conexao.prepareStatement(sql);
             ps.setInt(1, id);
             ps.executeUpdate();
 

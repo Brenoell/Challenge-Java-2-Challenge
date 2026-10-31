@@ -12,11 +12,6 @@ import java.util.List;
 
 public class CarteiraDAO {
 
-    private Connection conexao;
-
-    public CarteiraDAO() {
-        conexao = ConnectionFactory.obterConexao();
-    }
 
     public void criar(Carteira carteira) {
 
@@ -24,7 +19,8 @@ public class CarteiraDAO {
                 "(qtd_pontos, qtd_vales_desconto, qtd_passagens, CONTA_id_conta) " +
                 "VALUES (?, ?, ?, ?)";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setInt(1, carteira.getQuantidadePontos());
             ps.setInt(2, carteira.getValesDesconto());
@@ -42,7 +38,8 @@ public class CarteiraDAO {
 
         String sql = "SELECT * FROM carteira WHERE id_carteira = ?";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -76,7 +73,8 @@ public class CarteiraDAO {
 
         String sql = "SELECT * FROM carteira WHERE CONTA_id_conta = ?";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setInt(1, idConta);
 
@@ -112,7 +110,8 @@ public class CarteiraDAO {
 
         List<Carteira> carteiras = new ArrayList<>();
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ResultSet rs = ps.executeQuery();
 
@@ -146,7 +145,8 @@ public class CarteiraDAO {
                 "SET qtd_pontos = qtd_pontos + ? " +
                 "WHERE id_carteira = ?";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setInt(1, quantidade);
             ps.setInt(2, id);
@@ -164,7 +164,8 @@ public class CarteiraDAO {
                 "SET qtd_pontos = qtd_pontos + ? " +
                 "WHERE CONTA_id_conta = ?";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setInt(1, quantidade);
             ps.setInt(2, idConta);
@@ -183,7 +184,8 @@ public class CarteiraDAO {
                 "WHERE id_carteira = ? " +
                 "AND qtd_pontos >= ?";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setInt(1, quantidade);
             ps.setInt(2, id);
@@ -202,7 +204,8 @@ public class CarteiraDAO {
                 "SET qtd_vales_desconto = qtd_vales_desconto + ? " +
                 "WHERE id_carteira = ?";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setInt(1, quantidade);
             ps.setInt(2, id);
@@ -221,7 +224,8 @@ public class CarteiraDAO {
                 "WHERE id_carteira = ? " +
                 "AND qtd_vales_desconto >= ?";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setInt(1, quantidade);
             ps.setInt(2, id);
@@ -240,7 +244,8 @@ public class CarteiraDAO {
                 "SET qtd_passagens = qtd_passagens + ? " +
                 "WHERE id_carteira = ?";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setInt(1, quantidade);
             ps.setInt(2, id);
@@ -256,7 +261,8 @@ public class CarteiraDAO {
 
         String sql = "DELETE FROM carteira WHERE id_carteira = ?";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             ps.executeUpdate();

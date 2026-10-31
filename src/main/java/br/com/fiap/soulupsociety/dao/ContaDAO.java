@@ -14,31 +14,62 @@ import java.util.List;
 
 public class ContaDAO {
 
-    private final Connection conexao;
-
-    public ContaDAO() {
-        conexao = ConnectionFactory.obterConexao();
-    }
 
     public void cadastrar(Conta conta) {
 
         conta.setDataCriacao(LocalDate.now());
 
-        String sql = "INSERT INTO conta " +
+        String sqlConta = "INSERT INTO conta " +
                 "(nm_conta, ds_email, ds_senha, dt_criacao, ds_bio, " +
                 "USUARIO_id_usuario) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        String sqlCarteira = "INSERT INTO carteira " +
+                "(qtd_pontos, qtd_vales_desconto, qtd_passagens, CONTA_id_conta) " +
+                "VALUES (0, 0, 0, ?)";
 
-            ps.setString(1, conta.getNomeConta());
-            ps.setString(2, conta.getEmail());
-            ps.setString(3, conta.getSenha());
-            ps.setDate(4, Date.valueOf(conta.getDataCriacao()));
-            ps.setString(5, conta.getBio());
-            ps.setInt(6, conta.getUsuario().getId());
+        // Conexão própria e fechada no fim: a transação não interfere
+        // na conexão compartilhada usada pelos outros métodos
+        try (Connection con = ConnectionFactory.obterConexao()) {
 
-            ps.executeUpdate();
+            con.setAutoCommit(false);
+
+            try {
+                int idConta;
+
+                try (PreparedStatement ps = con.prepareStatement(
+                        sqlConta, new String[]{"id_conta"})) {
+
+                    ps.setString(1, conta.getNomeConta());
+                    ps.setString(2, conta.getEmail());
+                    ps.setString(3, conta.getSenha());
+                    ps.setDate(4, Date.valueOf(conta.getDataCriacao()));
+                    ps.setString(5, conta.getBio());
+                    ps.setInt(6, conta.getUsuario().getId());
+
+                    ps.executeUpdate();
+
+                    try (ResultSet rs = ps.getGeneratedKeys()) {
+                        if (!rs.next()) {
+                            throw new SQLException(
+                                    "Não foi possível obter o ID da conta criada.");
+                        }
+                        idConta = rs.getInt(1);
+                    }
+                }
+
+                try (PreparedStatement ps = con.prepareStatement(sqlCarteira)) {
+                    ps.setInt(1, idConta);
+                    ps.executeUpdate();
+                }
+
+                con.commit();
+                conta.setId(idConta);
+
+            } catch (SQLException e) {
+                con.rollback();
+                throw e;
+            }
 
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao cadastrar conta.", e);
@@ -50,7 +81,8 @@ public class ContaDAO {
         String sql = "SELECT * FROM conta " +
                 "WHERE ds_email = ? AND ds_senha = ?";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setString(1, email);
             ps.setString(2, senha);
@@ -88,7 +120,8 @@ public class ContaDAO {
 
         String sql = "SELECT * FROM conta WHERE id_conta = ?";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -127,7 +160,8 @@ public class ContaDAO {
 
         String sql = "SELECT * FROM conta";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -163,7 +197,8 @@ public class ContaDAO {
                 "USUARIO_id_usuario = ? " +
                 "WHERE id_conta = ?";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
 
             ps.setString(1, conta.getNomeConta());
             ps.setString(2, conta.getEmail());
@@ -181,12 +216,30 @@ public class ContaDAO {
 
     public void deletar(Integer id) {
 
-        String sql = "DELETE FROM conta WHERE id_conta = ?";
+        String sqlCarteira = "DELETE FROM carteira WHERE CONTA_id_conta = ?";
+        String sqlConta = "DELETE FROM conta WHERE id_conta = ?";
 
-        try (PreparedStatement ps = conexao.prepareStatement(sql)) {
+        try (Connection con = ConnectionFactory.obterConexao()) {
 
-            ps.setInt(1, id);
-            ps.executeUpdate();
+            con.setAutoCommit(false);
+
+            try {
+                try (PreparedStatement ps = con.prepareStatement(sqlCarteira)) {
+                    ps.setInt(1, id);
+                    ps.executeUpdate();
+                }
+
+                try (PreparedStatement ps = con.prepareStatement(sqlConta)) {
+                    ps.setInt(1, id);
+                    ps.executeUpdate();
+                }
+
+                con.commit();
+
+            } catch (SQLException e) {
+                con.rollback();
+                throw e;
+            }
 
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao deletar conta.", e);

@@ -1,7 +1,10 @@
 package br.com.fiap.soulupsociety.controller;
 
+import br.com.fiap.soulupsociety.dto.CarteiraDTO;
+import br.com.fiap.soulupsociety.mapper.CarteiraMapper;
 import br.com.fiap.soulupsociety.models.Carteira;
 import br.com.fiap.soulupsociety.service.CarteiraService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +32,20 @@ public class CarteiraController {
     @GetMapping("/{id}")
     public Carteira consultar(@PathVariable Integer id) {
         return service.consultar(id);
+    }
+
+    // READ - Consultar carteira pela conta
+    @GetMapping("/conta/{idConta}")
+    public ResponseEntity<CarteiraDTO> consultarPorConta(
+            @PathVariable Integer idConta) {
+
+        Carteira carteira = service.consultarPorConta(idConta);
+
+        if (carteira == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(CarteiraMapper.toRecordDTO(carteira));
     }
 
     // UPDATE - Adicionar pontos

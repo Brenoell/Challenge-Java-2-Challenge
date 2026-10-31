@@ -13,12 +13,6 @@ import java.util.List;
 
 public class PostagemDAO {
 
-    private Connection conexao;
-    private PreparedStatement ps = null;
-
-    public PostagemDAO() {
-        conexao = ConnectionFactory.obterConexao();
-    }
 
     public void cadastrar(Postagem postagem) {
 
@@ -26,8 +20,8 @@ public class PostagemDAO {
                 "(ds_postagem, dt_postagem, qtd_curtidas, img_postagem, CONTA_id_conta) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao()) {
+            PreparedStatement ps = conexao.prepareStatement(sql);
 
             ps.setString(1, postagem.getDescricaoTexto());
             ps.setDate(2, Date.valueOf(postagem.getDataPostagem()));
@@ -49,8 +43,8 @@ public class PostagemDAO {
                 "JOIN conta c ON c.id_conta = p.CONTA_id_conta " +
                 "WHERE p.id_postagem = ?";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao()) {
+            PreparedStatement ps = conexao.prepareStatement(sql);
             ps.setInt(1, id);
 
             ResultSet rs = ps.executeQuery();
@@ -95,8 +89,8 @@ public class PostagemDAO {
                 "FROM postagem p " +
                 "JOIN conta c ON c.id_conta = p.CONTA_id_conta";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao()) {
+            PreparedStatement ps = conexao.prepareStatement(sql);
 
             ResultSet rs = ps.executeQuery();
 
@@ -139,8 +133,8 @@ public class PostagemDAO {
                 "img_postagem = ?, CONTA_id_conta = ? " +
                 "WHERE id_postagem = ?";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao()) {
+            PreparedStatement ps = conexao.prepareStatement(sql);
 
             ps.setString(1, postagem.getDescricaoTexto());
             ps.setDate(2, Date.valueOf(postagem.getDataPostagem()));
@@ -160,8 +154,8 @@ public class PostagemDAO {
 
         String sql = "DELETE FROM postagem WHERE id_postagem = ?";
 
-        try {
-            ps = conexao.prepareStatement(sql);
+        try (Connection conexao = ConnectionFactory.obterConexao()) {
+            PreparedStatement ps = conexao.prepareStatement(sql);
             ps.setInt(1, id);
             ps.executeUpdate();
 
