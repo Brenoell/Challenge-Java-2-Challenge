@@ -133,4 +133,15 @@ public class CarteiraService {
             );
         }
     }
+
+    private static final int CUSTO_PASSAGEM = 1000;
+
+    public boolean trocarPontosPorPassagem(Integer id) {
+
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("O ID da carteira deve ser positivo.");
+        }
+
+        return dao.trocarPontosPorPassagem(id, CUSTO_PASSAGEM);
+    }
 }

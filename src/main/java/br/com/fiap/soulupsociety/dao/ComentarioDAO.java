@@ -92,6 +92,46 @@ public class ComentarioDAO {
         return comentarios;
     }
 
+    public List<Comentario> listarPorPostagem(Integer idPostagem) {
+
+        String sql = "SELECT cm.id_comentario, cm.ds_comentario, cm.dt_comentario, " +
+                "cm.qtd_curtidas, cm.conta_id_conta, c.nm_conta " +
+                "FROM comentario cm " +
+                "JOIN conta c ON c.id_conta = cm.conta_id_conta " +
+                "WHERE cm.postagem_id_postagem = ? " +
+                "ORDER BY cm.id_comentario DESC";
+
+        List<Comentario> comentarios = new ArrayList<>();
+
+        try (Connection conn = ConnectionFactory.obterConexao();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idPostagem);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Comentario comentario = new Comentario();
+                    comentario.setId(rs.getInt("ID_COMENTARIO"));
+                    comentario.setTextoComentario(rs.getString("DS_COMENTARIO"));
+                    comentario.setDataComentario(rs.getDate("DT_COMENTARIO").toLocalDate());
+                    comentario.setQuantidadeCurtidas(rs.getInt("QTD_CURTIDAS"));
+
+                    Conta conta = new Conta();
+                    conta.setId(rs.getInt("CONTA_ID_CONTA"));
+                    conta.setNomeConta(rs.getString("NM_CONTA"));
+                    comentario.setConta(conta);
+
+                    comentarios.add(comentario);
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao listar comentários da postagem.", e);
+        }
+
+        return comentarios;
+    }
+
     public void atualizar(Comentario comentario) {
 
         String sql = "UPDATE COMENTARIO " +

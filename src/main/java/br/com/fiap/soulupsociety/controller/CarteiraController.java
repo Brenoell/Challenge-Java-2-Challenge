@@ -48,6 +48,21 @@ public class CarteiraController {
         return ResponseEntity.ok(CarteiraMapper.toRecordDTO(carteira));
     }
 
+    //
+    @PatchMapping("/{id}/trocar-passagem")
+    public ResponseEntity<CarteiraDTO> trocarPassagem(@PathVariable Integer id) {
+
+        boolean trocou = service.trocarPontosPorPassagem(id);
+
+        if (!trocou) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(
+                CarteiraMapper.toRecordDTO(service.consultar(id))
+        );
+    }
+
     // UPDATE - Adicionar pontos
     @PatchMapping("/{id}/pontos/adicionar")
     public void adicionarPontos(

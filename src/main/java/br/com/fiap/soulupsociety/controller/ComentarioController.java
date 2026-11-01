@@ -23,6 +23,11 @@ public class ComentarioController {
         return service.listar();
     }
 
+    @GetMapping("/postagem/{idPostagem}")
+    public List<Comentario> listarPorPostagem(@PathVariable Integer idPostagem) {
+        return service.listarPorPostagem(idPostagem);
+    }
+
     @GetMapping("/{id}")
     public Comentario consultar(@PathVariable Integer id) {
         return service.consultar(id);

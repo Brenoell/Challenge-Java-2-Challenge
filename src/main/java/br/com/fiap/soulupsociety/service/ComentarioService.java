@@ -80,6 +80,15 @@ public class ComentarioService {
         return dao.listar();
     }
 
+    public List<Comentario> listarPorPostagem(Integer idPostagem) {
+
+        if (idPostagem == null || idPostagem <= 0) {
+            throw new IllegalArgumentException("Informe uma postagem válida.");
+        }
+
+        return dao.listarPorPostagem(idPostagem);
+    }
+
     public void atualizar(Comentario comentario) {
 
         if (comentario == null ||

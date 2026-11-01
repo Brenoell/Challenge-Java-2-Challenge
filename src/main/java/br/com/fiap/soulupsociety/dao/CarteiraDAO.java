@@ -34,6 +34,26 @@ public class CarteiraDAO {
         }
     }
 
+    public boolean trocarPontosPorPassagem(Integer id, int custo) {
+
+        String sql = "UPDATE carteira " +
+                "SET qtd_pontos = qtd_pontos - ?, qtd_passagens = qtd_passagens + 1 " +
+                "WHERE id_carteira = ? AND qtd_pontos >= ?";
+
+        try (Connection conexao = ConnectionFactory.obterConexao();
+             PreparedStatement ps = conexao.prepareStatement(sql)) {
+
+            ps.setInt(1, custo);
+            ps.setInt(2, id);
+            ps.setInt(3, custo);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public Carteira consultarPorId(Integer id) {
 
         String sql = "SELECT * FROM carteira WHERE id_carteira = ?";
