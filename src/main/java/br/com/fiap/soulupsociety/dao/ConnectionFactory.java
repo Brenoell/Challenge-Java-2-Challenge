@@ -7,19 +7,18 @@ import java.sql.SQLException;
 public class ConnectionFactory {
 
     public static Connection obterConexao() {
-        Connection conexao = null;
+        String url = System.getenv("DB_URL");
+        String usuario = System.getenv("DB_USER");
+        String senha = System.getenv("DB_PASSWORD");
 
-        try {
-            conexao = DriverManager.getConnection(
-                    "jdbc:oracle:thin:@oracle.fiap.com.br:1521:orcl",
-                    "rm569961",
-                    "030308"
-            );
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        if (url == null || usuario == null || senha == null) {
+            throw new IllegalStateException("Variáveis DB_URL, DB_USER e DB_PASSWORD não configuradas.");
         }
-
-        return conexao;
+        try {
+            return DriverManager.getConnection(url, usuario, senha);
+        } catch (SQLException e) {
+            throw new RuntimeException("Erro ao conectar ao banco Oracle.", e);
+        }
     }
 }
 

@@ -12,7 +12,7 @@ public class PostagemService {
     private final PostagemDAO dao = new PostagemDAO();
     private final CarteiraDAO carteiraDAO = new CarteiraDAO();
 
-    private static final int PONTOS_POR_POSTAGEM = 100;
+    private static final int PONTOS_POR_POSTAGEM = 200;
 
     public void cadastrar(Postagem postagem) {
 
