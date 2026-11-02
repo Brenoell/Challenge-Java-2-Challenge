@@ -134,7 +134,7 @@ public class CarteiraService {
         }
     }
 
-    private static final int CUSTO_PASSAGEM = 1000;
+    private static final int CUSTO_PASSAGEM = 500;
 
     public boolean trocarPontosPorPassagem(Integer id) {
 

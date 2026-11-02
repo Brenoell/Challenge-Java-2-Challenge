@@ -26,7 +26,7 @@ public class ContaDAO {
 
         String sqlCarteira = "INSERT INTO carteira " +
                 "(qtd_pontos, qtd_vales_desconto, qtd_passagens, CONTA_id_conta) " +
-                "VALUES (0, 0, 0, ?)";
+                "VALUES (5000, 0, 0, ?)";
 
         // Conexão própria e fechada no fim: a transação não interfere
         // na conexão compartilhada usada pelos outros métodos
