@@ -1,4 +1,3 @@
-
 package br.com.fiap.soulupsociety.controller;
 
 import br.com.fiap.soulupsociety.dto.CarteiraDTO;
@@ -9,13 +8,17 @@ import br.com.fiap.soulupsociety.service.CarteiraService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:5173")
+
 @RestController
 @RequestMapping("/carteiras")
 public class CarteiraController {
+
+    private static final int LIMITE_PASSAGENS = 10;
+    private static final int CUSTO_VALE_DESCONTO = 100; // ajuste para o seu valor
 
     private final CarteiraService service = new CarteiraService();
 
@@ -62,17 +65,33 @@ public class CarteiraController {
         );
     }
 
-    // UPDATE - Trocar pontos por passagem
+    // UPDATE - Trocar pontos por passagem (ou por vale-desconto se atingiu o limite)
     @PatchMapping("/{id}/trocar-passagem")
     public ResponseEntity<CarteiraDTO> trocarPassagem(
             @PathVariable Integer id) {
 
-        service.trocarPontosPorPassagem(id);
-
         Carteira carteira = service.consultar(id);
 
+        if (carteira.getQuantidadePassagens() >= LIMITE_PASSAGENS) {
+
+            // Limite atingido: troca por vale-desconto
+            if (carteira.getQuantidadePontos() < CUSTO_VALE_DESCONTO) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Pontos insuficientes para trocar por vale-desconto"
+                );
+            }
+
+            service.removerPontos(id, CUSTO_VALE_DESCONTO);
+            service.adicionarValesDesconto(id, 1);
+
+        } else {
+            // Abaixo do limite: troca normal por passagem
+            service.trocarPontosPorPassagem(id);
+        }
+
         return ResponseEntity.ok(
-                CarteiraMapper.toRecordDTO(carteira)
+                CarteiraMapper.toRecordDTO(service.consultar(id))
         );
     }
 
@@ -120,11 +139,21 @@ public class CarteiraController {
         return ResponseEntity.noContent().build();
     }
 
-    // UPDATE - Adicionar passagens
+    // UPDATE - Adicionar passagens (respeita o limite)
     @PatchMapping("/{id}/passagens/adicionar")
     public ResponseEntity<Void> adicionarPassagem(
             @PathVariable Integer id,
             @RequestParam int quantidade) {
+
+        Carteira carteira = service.consultar(id);
+
+        if (carteira.getQuantidadePassagens() + quantidade > LIMITE_PASSAGENS) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Limite de " + LIMITE_PASSAGENS
+                            + " passagens atingido. Troque seus pontos por vale-desconto."
+            );
+        }
 
         service.adicionarPassagem(id, quantidade);
 

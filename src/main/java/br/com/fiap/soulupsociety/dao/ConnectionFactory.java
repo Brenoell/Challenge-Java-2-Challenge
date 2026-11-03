@@ -9,7 +9,7 @@ public class ConnectionFactory {
     public static Connection obterConexao() {
         String url = System.getenv("SPRING_DATASOURCE_URL");
         String usuario = System.getenv("SPRING_DATASOURCE_USERNAME");
-        String senha = System.getenv("SPRING_DATASOURCE_PASSWORD");
+            String senha = System.getenv("SPRING_DATASOURCE_PASSWORD");
 
         if (url == null || usuario == null || senha == null) {
             throw new IllegalStateException(
