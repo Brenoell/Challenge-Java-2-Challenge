@@ -2,6 +2,7 @@
 package br.com.fiap.soulupsociety.service;
 
 import br.com.fiap.soulupsociety.dao.UsuarioDAO;
+import br.com.fiap.soulupsociety.exception.RecursoNaoEncontradoException;
 import br.com.fiap.soulupsociety.models.Usuario;
 
 import java.time.LocalDate;
@@ -35,18 +36,29 @@ public class UsuarioService {
         Usuario usuario = usuarioDAO.consultarPorId(id);
 
         if (usuario == null) {
-            throw new IllegalArgumentException("Usuário não encontrado.");
+            throw new RecursoNaoEncontradoException(
+                    "Usuário não encontrado."
+            );
         }
 
         return usuario;
     }
 
     public Usuario consultarPorCpf(Long cpf) {
+
         if (cpf == null || !cpfValido(cpf)) {
             throw new IllegalArgumentException("Informe um CPF válido.");
         }
 
-        return usuarioDAO.consultarPorCpf(cpf);
+        Usuario usuario = usuarioDAO.consultarPorCpf(cpf);
+
+        if (usuario == null) {
+            throw new RecursoNaoEncontradoException(
+                    "Usuário não encontrado."
+            );
+        }
+
+        return usuario;
     }
 
     public List<Usuario> listar() {
@@ -73,21 +85,29 @@ public class UsuarioService {
             );
         }
 
-        if (usuarioDAO.consultarPorId(usuario.getId()) == null) {
-            throw new IllegalArgumentException("Usuário não encontrado.");
-        }
+        consultarPorId(usuario.getId());
 
-        usuarioDAO.atualizar(usuario);
+        boolean atualizado = usuarioDAO.atualizar(usuario);
+
+        if (!atualizado) {
+            throw new RecursoNaoEncontradoException(
+                    "Não foi possível atualizar o usuário."
+            );
+        }
     }
 
     public void deletar(Integer id) {
         validarId(id);
 
-        if (usuarioDAO.consultarPorId(id) == null) {
-            throw new IllegalArgumentException("Usuário não encontrado.");
-        }
+        consultarPorId(id);
 
-        usuarioDAO.deletar(id);
+        boolean deletado = usuarioDAO.deletar(id);
+
+        if (!deletado) {
+            throw new RecursoNaoEncontradoException(
+                    "Não foi possível excluir o usuário."
+            );
+        }
     }
 
     private void validarId(Integer id) {
@@ -99,7 +119,6 @@ public class UsuarioService {
     private boolean cpfValido(Long cpf) {
         String numero = String.valueOf(cpf);
 
-        return numero.matches("\\d{11}") &&
-                !numero.matches("(\\d)\\1{10}");
+        return numero.matches("\\d{11}");
     }
 }

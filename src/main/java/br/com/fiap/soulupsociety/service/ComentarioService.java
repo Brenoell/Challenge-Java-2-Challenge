@@ -3,6 +3,7 @@ package br.com.fiap.soulupsociety.service;
 
 import br.com.fiap.soulupsociety.dao.CarteiraDAO;
 import br.com.fiap.soulupsociety.dao.ComentarioDAO;
+import br.com.fiap.soulupsociety.exception.RecursoNaoEncontradoException;
 import br.com.fiap.soulupsociety.models.Comentario;
 
 import java.time.LocalDate;
@@ -15,6 +16,7 @@ public class ComentarioService {
 
     private static final int PONTOS_POR_COMENTARIO = 50;
 
+    // CREATE - Cadastrar comentário
     public void cadastrar(Comentario comentario) {
 
         if (comentario == null) {
@@ -57,18 +59,15 @@ public class ComentarioService {
         );
     }
 
+    // READ - Consultar comentário por ID
     public Comentario consultar(Integer id) {
 
-        if (id == null || id <= 0) {
-            throw new IllegalArgumentException(
-                    "Informe um comentário válido."
-            );
-        }
+        validarId(id);
 
         Comentario comentario = dao.consultarPorId(id);
 
         if (comentario == null) {
-            throw new IllegalArgumentException(
+            throw new RecursoNaoEncontradoException(
                     "Comentário não encontrado."
             );
         }
@@ -76,19 +75,21 @@ public class ComentarioService {
         return comentario;
     }
 
+    // READ - Listar comentários
     public List<Comentario> listar() {
+
         return dao.listar();
     }
 
+    // READ - Listar comentários de uma postagem
     public List<Comentario> listarPorPostagem(Integer idPostagem) {
 
-        if (idPostagem == null || idPostagem <= 0) {
-            throw new IllegalArgumentException("Informe uma postagem válida.");
-        }
+        validarId(idPostagem);
 
         return dao.listarPorPostagem(idPostagem);
     }
 
+    // UPDATE - Atualizar comentário
     public void atualizar(Comentario comentario) {
 
         if (comentario == null ||
@@ -106,16 +107,9 @@ public class ComentarioService {
             );
         }
 
-        Comentario existente = dao.consultarPorId(
-                comentario.getId()
-        );
+        Comentario existente = consultar(comentario.getId());
 
-        if (existente == null) {
-            throw new IllegalArgumentException(
-                    "Comentário não encontrado."
-            );
-        }
-
+        // Mantém os dados originais do comentário
         comentario.setDataComentario(
                 existente.getDataComentario()
         );
@@ -136,25 +130,39 @@ public class ComentarioService {
                 existente.getPostagem()
         );
 
-        dao.atualizar(comentario);
+        boolean atualizado = dao.atualizar(comentario);
+
+        if (!atualizado) {
+            throw new RecursoNaoEncontradoException(
+                    "Não foi possível encontrar o comentário para atualizar."
+            );
+        }
     }
 
+    // DELETE - Deletar comentário
     public void deletar(Integer id) {
+
+        validarId(id);
+
+        // Verifica se o comentário existe
+        consultar(id);
+
+        boolean deletado = dao.deletar(id);
+
+        if (!deletado) {
+            throw new RecursoNaoEncontradoException(
+                    "Não foi possível encontrar o comentário para excluir."
+            );
+        }
+    }
+
+    // Método auxiliar para validar IDs
+    private void validarId(Integer id) {
 
         if (id == null || id <= 0) {
             throw new IllegalArgumentException(
-                    "Informe um comentário válido para excluir."
+                    "Informe um ID válido."
             );
         }
-
-        Comentario comentario = dao.consultarPorId(id);
-
-        if (comentario == null) {
-            throw new IllegalArgumentException(
-                    "Comentário não encontrado."
-            );
-        }
-
-        dao.deletar(id);
     }
 }

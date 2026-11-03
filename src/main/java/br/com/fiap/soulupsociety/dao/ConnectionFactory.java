@@ -7,45 +7,22 @@ import java.sql.SQLException;
 public class ConnectionFactory {
 
     public static Connection obterConexao() {
-        String url = System.getenv("DB_URL");
-        String usuario = System.getenv("DB_USER");
-        String senha = System.getenv("DB_PASSWORD");
+        String url = System.getenv("SPRING_DATASOURCE_URL");
+        String usuario = System.getenv("SPRING_DATASOURCE_USERNAME");
+        String senha = System.getenv("SPRING_DATASOURCE_PASSWORD");
 
         if (url == null || usuario == null || senha == null) {
-            throw new IllegalStateException("Variáveis DB_URL, DB_USER e DB_PASSWORD não configuradas.");
+            throw new IllegalStateException(
+                    "Variáveis de ambiente do Oracle não configuradas."
+            );
         }
+
         try {
             return DriverManager.getConnection(url, usuario, senha);
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao conectar ao banco Oracle.", e);
+            throw new RuntimeException(
+                    "Erro ao conectar ao banco Oracle.", e
+            );
         }
     }
 }
-
-//package br.com.fiap.soulupsociety.dao;
-//
-//import java.sql.Connection;
-//import java.sql.DriverManager;
-//import java.sql.SQLException;
-//
-//public class ConnectionFactory {
-//
-//    public static Connection obterConexao() {
-//        String url = System.getenv("SPRING_DATASOURCE_URL");
-//        String usuario = System.getenv("SPRING_DATASOURCE_USERNAME");
-//        String senha = System.getenv("SPRING_DATASOURCE_PASSWORD");
-//
-//        if (url == null || usuario == null || senha == null) {
-//            throw new IllegalStateException(
-//                    "Variáveis de ambiente do Oracle não configuradas."
-//            );
-//        }
-//
-//        try {
-//            return DriverManager.getConnection(url, usuario, senha);
-//        } catch (SQLException e) {
-//            throw new RuntimeException(
-//                    "Erro ao conectar ao banco Oracle.", e
-//            );
-//        }
-//    }

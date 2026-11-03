@@ -1,3 +1,4 @@
+
 package br.com.fiap.soulupsociety.dao;
 
 import br.com.fiap.soulupsociety.models.Comentario;
@@ -13,6 +14,7 @@ import java.util.List;
 
 public class ComentarioDAO {
 
+    // CREATE - Cadastrar comentário
     public void cadastrar(Comentario comentario) {
 
         String sql = "INSERT INTO COMENTARIO " +
@@ -38,7 +40,6 @@ public class ComentarioDAO {
             }
 
             stmt.setInt(5, comentario.getConta().getId());
-
             stmt.setInt(6, comentario.getPostagem().getId());
 
             stmt.executeUpdate();
@@ -48,6 +49,7 @@ public class ComentarioDAO {
         }
     }
 
+    // READ - Consultar comentário por ID
     public Comentario consultarPorId(Integer id) {
 
         String sql = "SELECT * FROM COMENTARIO WHERE ID_COMENTARIO = ?";
@@ -71,6 +73,7 @@ public class ComentarioDAO {
         return null;
     }
 
+    // READ - Listar todos os comentários
     public List<Comentario> listar() {
 
         String sql = "SELECT * FROM COMENTARIO";
@@ -92,6 +95,7 @@ public class ComentarioDAO {
         return comentarios;
     }
 
+    // READ - Listar comentários de uma postagem
     public List<Comentario> listarPorPostagem(Integer idPostagem) {
 
         String sql = "SELECT cm.id_comentario, cm.ds_comentario, cm.dt_comentario, " +
@@ -109,16 +113,25 @@ public class ComentarioDAO {
             stmt.setInt(1, idPostagem);
 
             try (ResultSet rs = stmt.executeQuery()) {
+
                 while (rs.next()) {
+
                     Comentario comentario = new Comentario();
+
                     comentario.setId(rs.getInt("ID_COMENTARIO"));
                     comentario.setTextoComentario(rs.getString("DS_COMENTARIO"));
-                    comentario.setDataComentario(rs.getDate("DT_COMENTARIO").toLocalDate());
-                    comentario.setQuantidadeCurtidas(rs.getInt("QTD_CURTIDAS"));
+                    comentario.setDataComentario(
+                            rs.getDate("DT_COMENTARIO").toLocalDate()
+                    );
+                    comentario.setQuantidadeCurtidas(
+                            rs.getInt("QTD_CURTIDAS")
+                    );
 
                     Conta conta = new Conta();
+
                     conta.setId(rs.getInt("CONTA_ID_CONTA"));
                     conta.setNomeConta(rs.getString("NM_CONTA"));
+
                     comentario.setConta(conta);
 
                     comentarios.add(comentario);
@@ -126,13 +139,16 @@ public class ComentarioDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Erro ao listar comentários da postagem.", e);
+            throw new RuntimeException(
+                    "Erro ao listar comentários da postagem.", e
+            );
         }
 
         return comentarios;
     }
 
-    public void atualizar(Comentario comentario) {
+    // UPDATE - Atualizar comentário
+    public boolean atualizar(Comentario comentario) {
 
         String sql = "UPDATE COMENTARIO " +
                 "SET DS_COMENTARIO = ? " +
@@ -144,14 +160,15 @@ public class ComentarioDAO {
             stmt.setString(1, comentario.getTextoComentario());
             stmt.setInt(2, comentario.getId());
 
-            stmt.executeUpdate();
+            return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao atualizar comentário.", e);
         }
     }
 
-    public void deletar(Integer id) {
+    // DELETE - Deletar comentário
+    public boolean deletar(Integer id) {
 
         String sql = "DELETE FROM COMENTARIO WHERE ID_COMENTARIO = ?";
 
@@ -159,13 +176,15 @@ public class ComentarioDAO {
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);
-            stmt.executeUpdate();
+
+            return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao deletar comentário.", e);
         }
     }
 
+    // Método auxiliar para montar um comentário
     private Comentario montarComentario(ResultSet rs)
             throws SQLException {
 
@@ -173,18 +192,25 @@ public class ComentarioDAO {
 
         comentario.setId(rs.getInt("ID_COMENTARIO"));
         comentario.setTextoComentario(rs.getString("DS_COMENTARIO"));
+
         comentario.setDataComentario(
                 rs.getDate("DT_COMENTARIO").toLocalDate()
         );
-        comentario.setQuantidadeCurtidas(rs.getInt("QTD_CURTIDAS"));
+
+        comentario.setQuantidadeCurtidas(
+                rs.getInt("QTD_CURTIDAS")
+        );
+
         comentario.setImagem(rs.getBytes("IMG_COMENTARIO"));
 
         Conta conta = new Conta();
         conta.setId(rs.getInt("CONTA_ID_CONTA"));
+
         comentario.setConta(conta);
 
         Postagem postagem = new Postagem();
         postagem.setId(rs.getInt("POSTAGEM_ID_POSTAGEM"));
+
         comentario.setPostagem(postagem);
 
         return comentario;

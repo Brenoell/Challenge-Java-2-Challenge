@@ -1,14 +1,17 @@
+
 package br.com.fiap.soulupsociety.service;
 
 import br.com.fiap.soulupsociety.dao.ContaDAO;
+import br.com.fiap.soulupsociety.exception.CredenciaisInvalidasException;
+import br.com.fiap.soulupsociety.exception.RecursoNaoEncontradoException;
 import br.com.fiap.soulupsociety.models.Conta;
 
-import java.time.LocalDate;
+
 import java.util.List;
 
 public class ContaService {
 
-    private ContaDAO dao = new ContaDAO();
+    private final ContaDAO dao = new ContaDAO();
 
     // CREATE - Cadastrar conta
     public void cadastrar(Conta conta) {
@@ -19,47 +22,7 @@ public class ContaService {
             );
         }
 
-        if (conta.getNomeConta() == null ||
-                conta.getNomeConta().trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "O nome da conta é obrigatório."
-            );
-        }
-
-        if (conta.getEmail() == null ||
-                conta.getEmail().trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "O e-mail é obrigatório."
-            );
-        }
-
-        if (!conta.getEmail().matches(
-                "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
-            throw new IllegalArgumentException(
-                    "O e-mail informado é inválido."
-            );
-        }
-
-        if (conta.getSenha() == null ||
-                conta.getSenha().trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "A senha é obrigatória."
-            );
-        }
-
-        if (conta.getSenha().length() < 6) {
-            throw new IllegalArgumentException(
-                    "A senha deve ter pelo menos 6 caracteres."
-            );
-        }
-
-        if (conta.getUsuario() == null ||
-                conta.getUsuario().getId() == null ||
-                conta.getUsuario().getId() <= 0) {
-            throw new IllegalArgumentException(
-                    "É necessário informar um usuário válido."
-            );
-        }
+        validarDados(conta);
 
         dao.cadastrar(conta);
     }
@@ -67,15 +30,13 @@ public class ContaService {
     // LOGIN
     public Conta login(String email, String senha) {
 
-        if (email == null ||
-                email.trim().isEmpty()) {
+        if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException(
                     "O e-mail é obrigatório."
             );
         }
 
-        if (senha == null ||
-                senha.trim().isEmpty()) {
+        if (senha == null || senha.trim().isEmpty()) {
             throw new IllegalArgumentException(
                     "A senha é obrigatória."
             );
@@ -84,7 +45,7 @@ public class ContaService {
         Conta conta = dao.login(email, senha);
 
         if (conta == null) {
-            throw new IllegalArgumentException(
+            throw new CredenciaisInvalidasException(
                     "E-mail ou senha incorretos."
             );
         }
@@ -95,13 +56,17 @@ public class ContaService {
     // READ - Consultar conta por ID
     public Conta consultar(Integer id) {
 
-        if (id == null || id <= 0) {
-            throw new IllegalArgumentException(
-                    "O ID deve ser um número positivo."
+        validarId(id);
+
+        Conta conta = dao.consultarPorId(id);
+
+        if (conta == null) {
+            throw new RecursoNaoEncontradoException(
+                    "Conta não encontrada."
             );
         }
 
-        return dao.consultarPorId(id);
+        return conta;
     }
 
     // READ - Listar todas as contas
@@ -118,14 +83,44 @@ public class ContaService {
             );
         }
 
-        if (conta.getId() == null || conta.getId() <= 0) {
-            throw new IllegalArgumentException(
-                    "É necessário informar um ID válido para atualizar."
+        validarId(conta.getId());
+        validarDados(conta);
+
+        // Verifica se a conta existe
+        consultar(conta.getId());
+
+        boolean atualizado = dao.atualizar(conta);
+
+        if (!atualizado) {
+            throw new RecursoNaoEncontradoException(
+                    "Não foi possível atualizar a conta."
             );
         }
+    }
+
+    // DELETE - Deletar conta
+    public void deletar(Integer id) {
+
+        validarId(id);
+
+        // Verifica se a conta existe
+        consultar(id);
+
+        boolean deletado = dao.deletar(id);
+
+        if (!deletado) {
+            throw new RecursoNaoEncontradoException(
+                    "Não foi possível excluir a conta."
+            );
+        }
+    }
+
+    // VALIDAÇÕES
+    private void validarDados(Conta conta) {
 
         if (conta.getNomeConta() == null ||
                 conta.getNomeConta().trim().isEmpty()) {
+
             throw new IllegalArgumentException(
                     "O nome da conta é obrigatório."
             );
@@ -133,6 +128,7 @@ public class ContaService {
 
         if (conta.getEmail() == null ||
                 conta.getEmail().trim().isEmpty()) {
+
             throw new IllegalArgumentException(
                     "O e-mail é obrigatório."
             );
@@ -140,6 +136,7 @@ public class ContaService {
 
         if (!conta.getEmail().matches(
                 "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+
             throw new IllegalArgumentException(
                     "O e-mail informado é inválido."
             );
@@ -147,43 +144,34 @@ public class ContaService {
 
         if (conta.getSenha() == null ||
                 conta.getSenha().trim().isEmpty()) {
+
             throw new IllegalArgumentException(
                     "A senha é obrigatória."
             );
         }
 
-        if (conta.getDataCriacao() == null) {
+        if (conta.getSenha().length() < 6) {
             throw new IllegalArgumentException(
-                    "A data de criação é obrigatória."
-            );
-        }
-
-        if (conta.getDataCriacao().isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException(
-                    "A data de criação não pode ser futura."
+                    "A senha deve ter pelo menos 6 caracteres."
             );
         }
 
         if (conta.getUsuario() == null ||
                 conta.getUsuario().getId() == null ||
                 conta.getUsuario().getId() <= 0) {
+
             throw new IllegalArgumentException(
                     "É necessário informar um usuário válido."
             );
         }
-
-        dao.atualizar(conta);
     }
 
-    // DELETE - Deletar conta
-    public void deletar(Integer id) {
+    private void validarId(Integer id) {
 
         if (id == null || id <= 0) {
             throw new IllegalArgumentException(
                     "O ID deve ser um número positivo."
             );
         }
-
-        dao.deletar(id);
     }
 }

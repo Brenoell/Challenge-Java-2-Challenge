@@ -1,3 +1,4 @@
+
 package br.com.fiap.soulupsociety.dao;
 
 import br.com.fiap.soulupsociety.models.Conta;
@@ -14,7 +15,6 @@ import java.util.List;
 
 public class ContaDAO {
 
-
     public void cadastrar(Conta conta) {
 
         conta.setDataCriacao(LocalDate.now());
@@ -28,8 +28,6 @@ public class ContaDAO {
                 "(qtd_pontos, qtd_vales_desconto, qtd_passagens, CONTA_id_conta) " +
                 "VALUES (5000, 0, 0, ?)";
 
-        // Conexão própria e fechada no fim: a transação não interfere
-        // na conexão compartilhada usada pelos outros métodos
         try (Connection con = ConnectionFactory.obterConexao()) {
 
             con.setAutoCommit(false);
@@ -50,10 +48,13 @@ public class ContaDAO {
                     ps.executeUpdate();
 
                     try (ResultSet rs = ps.getGeneratedKeys()) {
+
                         if (!rs.next()) {
                             throw new SQLException(
-                                    "Não foi possível obter o ID da conta criada.");
+                                    "Não foi possível obter o ID da conta criada."
+                            );
                         }
+
                         idConta = rs.getInt(1);
                     }
                 }
@@ -64,6 +65,7 @@ public class ContaDAO {
                 }
 
                 con.commit();
+
                 conta.setId(idConta);
 
             } catch (SQLException e) {
@@ -90,22 +92,7 @@ public class ContaDAO {
             try (ResultSet rs = ps.executeQuery()) {
 
                 if (rs.next()) {
-
-                    Conta conta = new Conta();
-
-                    conta.setId(rs.getInt("id_conta"));
-                    conta.setNomeConta(rs.getString("nm_conta"));
-                    conta.setEmail(rs.getString("ds_email"));
-                    conta.setDataCriacao(
-                            rs.getDate("dt_criacao").toLocalDate()
-                    );
-                    conta.setBio(rs.getString("ds_bio"));
-
-                    Usuario usuario = new Usuario();
-                    usuario.setId(rs.getInt("USUARIO_id_usuario"));
-                    conta.setUsuario(usuario);
-
-                    return conta;
+                    return montarConta(rs);
                 }
             }
 
@@ -128,22 +115,7 @@ public class ContaDAO {
             try (ResultSet rs = ps.executeQuery()) {
 
                 if (rs.next()) {
-
-                    Conta conta = new Conta();
-
-                    conta.setId(rs.getInt("id_conta"));
-                    conta.setNomeConta(rs.getString("nm_conta"));
-                    conta.setEmail(rs.getString("ds_email"));
-                    conta.setDataCriacao(
-                            rs.getDate("dt_criacao").toLocalDate()
-                    );
-                    conta.setBio(rs.getString("ds_bio"));
-
-                    Usuario usuario = new Usuario();
-                    usuario.setId(rs.getInt("USUARIO_id_usuario"));
-                    conta.setUsuario(usuario);
-
-                    return conta;
+                    return montarConta(rs);
                 }
             }
 
@@ -165,22 +137,7 @@ public class ContaDAO {
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-
-                Conta conta = new Conta();
-
-                conta.setId(rs.getInt("id_conta"));
-                conta.setNomeConta(rs.getString("nm_conta"));
-                conta.setEmail(rs.getString("ds_email"));
-                conta.setDataCriacao(
-                        rs.getDate("dt_criacao").toLocalDate()
-                );
-                conta.setBio(rs.getString("ds_bio"));
-
-                Usuario usuario = new Usuario();
-                usuario.setId(rs.getInt("USUARIO_id_usuario"));
-                conta.setUsuario(usuario);
-
-                contas.add(conta);
+                contas.add(montarConta(rs));
             }
 
         } catch (SQLException e) {
@@ -190,7 +147,7 @@ public class ContaDAO {
         return contas;
     }
 
-    public void atualizar(Conta conta) {
+    public boolean atualizar(Conta conta) {
 
         String sql = "UPDATE conta SET " +
                 "nm_conta = ?, ds_email = ?, ds_senha = ?, ds_bio = ?, " +
@@ -207,34 +164,47 @@ public class ContaDAO {
             ps.setInt(5, conta.getUsuario().getId());
             ps.setInt(6, conta.getId());
 
-            ps.executeUpdate();
+            return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao atualizar conta.", e);
         }
     }
 
-    public void deletar(Integer id) {
+    public boolean deletar(Integer id) {
 
-        String sqlCarteira = "DELETE FROM carteira WHERE CONTA_id_conta = ?";
-        String sqlConta = "DELETE FROM conta WHERE id_conta = ?";
+        String sqlCarteira =
+                "DELETE FROM carteira WHERE CONTA_id_conta = ?";
+
+        String sqlConta =
+                "DELETE FROM conta WHERE id_conta = ?";
 
         try (Connection con = ConnectionFactory.obterConexao()) {
 
             con.setAutoCommit(false);
 
             try {
+
                 try (PreparedStatement ps = con.prepareStatement(sqlCarteira)) {
                     ps.setInt(1, id);
                     ps.executeUpdate();
                 }
 
+                int linhasAfetadas;
+
                 try (PreparedStatement ps = con.prepareStatement(sqlConta)) {
                     ps.setInt(1, id);
-                    ps.executeUpdate();
+                    linhasAfetadas = ps.executeUpdate();
+                }
+
+                if (linhasAfetadas == 0) {
+                    con.rollback();
+                    return false;
                 }
 
                 con.commit();
+
+                return true;
 
             } catch (SQLException e) {
                 con.rollback();
@@ -244,5 +214,29 @@ public class ContaDAO {
         } catch (SQLException e) {
             throw new RuntimeException("Erro ao deletar conta.", e);
         }
+    }
+
+    private Conta montarConta(ResultSet rs) throws SQLException {
+
+        Conta conta = new Conta();
+
+        conta.setId(rs.getInt("id_conta"));
+        conta.setNomeConta(rs.getString("nm_conta"));
+        conta.setEmail(rs.getString("ds_email"));
+
+        Date dataCriacao = rs.getDate("dt_criacao");
+
+        if (dataCriacao != null) {
+            conta.setDataCriacao(dataCriacao.toLocalDate());
+        }
+
+        conta.setBio(rs.getString("ds_bio"));
+
+        Usuario usuario = new Usuario();
+        usuario.setId(rs.getInt("USUARIO_id_usuario"));
+
+        conta.setUsuario(usuario);
+
+        return conta;
     }
 }

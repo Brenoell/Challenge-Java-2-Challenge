@@ -1,7 +1,11 @@
+
 package br.com.fiap.soulupsociety.controller;
 
 import br.com.fiap.soulupsociety.models.Postagem;
 import br.com.fiap.soulupsociety.service.PostagemService;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,28 +17,50 @@ public class PostagemController {
 
     private final PostagemService service = new PostagemService();
 
+    // CREATE - Cadastrar postagem
     @PostMapping
-    public void cadastrar(@RequestBody Postagem postagem) {
+    public ResponseEntity<Void> cadastrar(
+            @RequestBody Postagem postagem) {
+
         service.cadastrar(postagem);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
     }
 
+    // READ - Listar todas as postagens
     @GetMapping
-    public List<Postagem> listar() {
-        return service.listar();
+    public ResponseEntity<List<Postagem>> listar() {
+
+        return ResponseEntity.ok(service.listar());
     }
 
+    // READ - Consultar postagem por ID
     @GetMapping("/{id}")
-    public Postagem consultar(@PathVariable Integer id) {
-        return service.consultar(id);
+    public ResponseEntity<Postagem> consultar(
+            @PathVariable Integer id) {
+
+        return ResponseEntity.ok(service.consultar(id));
     }
 
+    // UPDATE - Atualizar postagem
     @PutMapping
-    public void atualizar(@RequestBody Postagem postagem) {
+    public ResponseEntity<Void> atualizar(
+            @RequestBody Postagem postagem) {
+
         service.atualizar(postagem);
+
+        return ResponseEntity.noContent().build();
     }
 
+    // DELETE - Deletar postagem
     @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Integer id) {
+    public ResponseEntity<Void> deletar(
+            @PathVariable Integer id) {
+
         service.deletar(id);
+
+        return ResponseEntity.noContent().build();
     }
 }

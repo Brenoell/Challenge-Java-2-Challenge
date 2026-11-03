@@ -1,15 +1,15 @@
+
 package br.com.fiap.soulupsociety.controller;
 
 import br.com.fiap.soulupsociety.dao.CarteiraDAO;
-import br.com.fiap.soulupsociety.dao.ContaDAO;
 import br.com.fiap.soulupsociety.dto.LoginDTO;
 import br.com.fiap.soulupsociety.models.Carteira;
 import br.com.fiap.soulupsociety.models.Conta;
+import br.com.fiap.soulupsociety.service.ContaService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,28 +23,35 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final ContaDAO contaDAO = new ContaDAO();
+    private final ContaService contaService = new ContaService();
     private final CarteiraDAO carteiraDAO = new CarteiraDAO();
 
+    // LOGIN
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestBody LoginDTO dados,
             HttpServletRequest request) {
 
-        Conta conta = contaDAO.login(
+        if (dados == null) {
+            throw new IllegalArgumentException(
+                    "Informe o e-mail e a senha."
+            );
+        }
+
+        // Verifica e-mail e senha
+        Conta conta = contaService.login(
                 dados.email(),
                 dados.senha()
         );
 
-        if (conta == null) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of(
-                            "erro",
-                            "E-mail ou senha inválidos"
-                    ));
+        // Encerra uma sessão anterior, se existir
+        HttpSession sessaoAntiga = request.getSession(false);
+
+        if (sessaoAntiga != null) {
+            sessaoAntiga.invalidate();
         }
 
+        // Cria uma nova sessão
         HttpSession sessao = request.getSession(true);
 
         sessao.setAttribute("idConta", conta.getId());
@@ -58,6 +65,7 @@ public class AuthController {
         );
     }
 
+    // VERIFICAR SESSÃO
     @GetMapping("/sessao")
     public ResponseEntity<?> verificarSessao(
             HttpServletRequest request) {
@@ -68,7 +76,7 @@ public class AuthController {
                 sessao.getAttribute("idConta") == null) {
 
             return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
+                    .status(401)
                     .body(Map.of("autenticado", false));
         }
 
@@ -80,9 +88,10 @@ public class AuthController {
         );
     }
 
-    // Dados da conta logada: nome, e-mail, pontos e passagens
+    // DADOS DA CONTA LOGADA
     @GetMapping("/me")
-    public ResponseEntity<?> me(HttpServletRequest request) {
+    public ResponseEntity<?> me(
+            HttpServletRequest request) {
 
         HttpSession sessao = request.getSession(false);
 
@@ -90,24 +99,23 @@ public class AuthController {
                 sessao.getAttribute("idConta") == null) {
 
             return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
+                    .status(401)
                     .body(Map.of("autenticado", false));
         }
 
         Integer idConta = (Integer) sessao.getAttribute("idConta");
 
-        Conta conta = contaDAO.consultarPorId(idConta);
-
-        if (conta == null) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("erro", "Conta não encontrada"));
-        }
+        Conta conta = contaService.consultar(idConta);
 
         Carteira carteira = carteiraDAO.consultarPorConta(idConta);
 
-        int pontos = carteira != null ? carteira.getQuantidadePontos() : 0;
-        int passagens = carteira != null ? carteira.getQuantidadePassagens() : 0;
+        int pontos = 0;
+        int passagens = 0;
+
+        if (carteira != null) {
+            pontos = carteira.getQuantidadePontos();
+            passagens = carteira.getQuantidadePassagens();
+        }
 
         return ResponseEntity.ok(
                 Map.of(
@@ -120,7 +128,7 @@ public class AuthController {
         );
     }
 
-    // Encerra a sessão
+    // LOGOUT
     @PostMapping("/logout")
     public ResponseEntity<?> logout(
             HttpServletRequest request) {

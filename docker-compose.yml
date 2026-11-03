@@ -1,8 +1,7 @@
-
 services:
-  ddd-agenda-web:
+  soulupsociety-api:
     build: .
-    container_name: ddd-agenda-web
+    container_name: soulupsociety-api
     ports:
       - "${PORT:-8080}:8080"
     environment:

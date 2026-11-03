@@ -1,7 +1,9 @@
+
 package br.com.fiap.soulupsociety.service;
 
 import br.com.fiap.soulupsociety.dao.CarteiraDAO;
 import br.com.fiap.soulupsociety.dao.PostagemDAO;
+import br.com.fiap.soulupsociety.exception.RecursoNaoEncontradoException;
 import br.com.fiap.soulupsociety.models.Postagem;
 
 import java.time.LocalDate;
@@ -14,6 +16,7 @@ public class PostagemService {
 
     private static final int PONTOS_POR_POSTAGEM = 100;
 
+    // CREATE - Cadastrar postagem
     public void cadastrar(Postagem postagem) {
 
         if (postagem == null) {
@@ -48,18 +51,15 @@ public class PostagemService {
         );
     }
 
+    // READ - Consultar postagem por ID
     public Postagem consultar(Integer id) {
 
-        if (id == null || id <= 0) {
-            throw new IllegalArgumentException(
-                    "Informe uma postagem válida."
-            );
-        }
+        validarId(id);
 
         Postagem postagem = dao.consultarPorId(id);
 
         if (postagem == null) {
-            throw new IllegalArgumentException(
+            throw new RecursoNaoEncontradoException(
                     "A postagem não foi encontrada."
             );
         }
@@ -67,10 +67,13 @@ public class PostagemService {
         return postagem;
     }
 
+    // READ - Listar postagens
     public List<Postagem> listar() {
+
         return dao.listar();
     }
 
+    // UPDATE - Atualizar postagem
     public void atualizar(Postagem postagem) {
 
         if (postagem == null ||
@@ -88,40 +91,52 @@ public class PostagemService {
             );
         }
 
-        Postagem existente = dao.consultarPorId(postagem.getId());
+        Postagem existente = consultar(postagem.getId());
 
-        if (existente == null) {
-            throw new IllegalArgumentException(
-                    "A postagem que você deseja editar não foi encontrada."
-            );
-        }
-
+        // Preserva os dados originais da postagem
         postagem.setDataPostagem(existente.getDataPostagem());
+
         postagem.setQuantidadeCurtidas(
                 existente.getQuantidadeCurtidas()
         );
+
         postagem.setImagem(existente.getImagem());
+
         postagem.setConta(existente.getConta());
 
-        dao.atualizar(postagem);
+        boolean atualizado = dao.atualizar(postagem);
+
+        if (!atualizado) {
+            throw new RecursoNaoEncontradoException(
+                    "Não foi possível encontrar a postagem para atualizar."
+            );
+        }
     }
 
+    // DELETE - Deletar postagem
     public void deletar(Integer id) {
+
+        validarId(id);
+
+        // verifica se a postagem existe
+        consultar(id);
+
+        boolean deletado = dao.deletar(id);
+
+        if (!deletado) {
+            throw new RecursoNaoEncontradoException(
+                    "Não foi possível encontrar a postagem para excluir."
+            );
+        }
+    }
+
+    // Método auxiliar para validar ID
+    private void validarId(Integer id) {
 
         if (id == null || id <= 0) {
             throw new IllegalArgumentException(
-                    "Informe uma postagem válida para excluir."
+                    "Informe uma postagem válida."
             );
         }
-
-        Postagem postagem = dao.consultarPorId(id);
-
-        if (postagem == null) {
-            throw new IllegalArgumentException(
-                    "A postagem que você deseja excluir não foi encontrada."
-            );
-        }
-
-        dao.deletar(id);
     }
 }

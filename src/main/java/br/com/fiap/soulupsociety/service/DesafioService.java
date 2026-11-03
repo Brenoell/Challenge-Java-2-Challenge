@@ -2,6 +2,7 @@
 package br.com.fiap.soulupsociety.service;
 
 import br.com.fiap.soulupsociety.dao.DesafioDAO;
+import br.com.fiap.soulupsociety.exception.RecursoNaoEncontradoException;
 import br.com.fiap.soulupsociety.models.Desafio;
 
 import java.util.List;
@@ -13,32 +14,7 @@ public class DesafioService {
     // Cadastrar desafio
     public void cadastrar(Desafio desafio) {
 
-        if (desafio == null) {
-            throw new IllegalArgumentException(
-                    "Não foi possível cadastrar o desafio. Verifique os dados informados."
-            );
-        }
-
-        if (desafio.getNome() == null ||
-                desafio.getNome().trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Informe um nome para o desafio."
-            );
-        }
-
-        if (desafio.getDescricaoDesafio() == null ||
-                desafio.getDescricaoDesafio().trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Informe uma descrição para o desafio."
-            );
-        }
-
-        if (desafio.getQtdPontos() == null ||
-                desafio.getQtdPontos() <= 0) {
-            throw new IllegalArgumentException(
-                    "A quantidade de pontos do desafio deve ser maior que zero."
-            );
-        }
+        validarDados(desafio);
 
         dao.cadastrar(desafio);
     }
@@ -51,7 +27,7 @@ public class DesafioService {
         Desafio desafio = dao.consultarPorId(id);
 
         if (desafio == null) {
-            throw new IllegalArgumentException(
+            throw new RecursoNaoEncontradoException(
                     "Não encontramos o desafio solicitado."
             );
         }
@@ -67,42 +43,20 @@ public class DesafioService {
     // Atualizar desafio
     public void atualizar(Desafio desafio) {
 
-        if (desafio == null) {
-            throw new IllegalArgumentException(
-                    "Não foi possível atualizar o desafio. Verifique os dados informados."
-            );
-        }
+        validarDados(desafio);
 
         validarId(desafio.getId());
 
-        if (desafio.getNome() == null ||
-                desafio.getNome().trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Informe um nome para o desafio."
+        // Verifica se o desafio existe
+        consultar(desafio.getId());
+
+        boolean atualizado = dao.atualizar(desafio);
+
+        if (!atualizado) {
+            throw new RecursoNaoEncontradoException(
+                    "Não foi possível atualizar o desafio."
             );
         }
-
-        if (desafio.getDescricaoDesafio() == null ||
-                desafio.getDescricaoDesafio().trim().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Informe uma descrição para o desafio."
-            );
-        }
-
-        if (desafio.getQtdPontos() == null ||
-                desafio.getQtdPontos() <= 0) {
-            throw new IllegalArgumentException(
-                    "A quantidade de pontos do desafio deve ser maior que zero."
-            );
-        }
-
-        if (dao.consultarPorId(desafio.getId()) == null) {
-            throw new IllegalArgumentException(
-                    "Não encontramos o desafio que você deseja atualizar."
-            );
-        }
-
-        dao.atualizar(desafio);
     }
 
     // Excluir desafio
@@ -110,16 +64,53 @@ public class DesafioService {
 
         validarId(id);
 
-        if (dao.consultarPorId(id) == null) {
+        // Verifica se o desafio existe
+        consultar(id);
+
+        boolean deletado = dao.deletar(id);
+
+        if (!deletado) {
+            throw new RecursoNaoEncontradoException(
+                    "Não foi possível excluir o desafio."
+            );
+        }
+    }
+
+    // Validar dados do desafio
+    private void validarDados(Desafio desafio) {
+
+        if (desafio == null) {
             throw new IllegalArgumentException(
-                    "Não encontramos o desafio que você deseja excluir."
+                    "Não foi possível cadastrar ou atualizar o desafio. Verifique os dados informados."
             );
         }
 
-        dao.deletar(id);
+        if (desafio.getNome() == null ||
+                desafio.getNome().trim().isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "Informe um nome para o desafio."
+            );
+        }
+
+        if (desafio.getDescricaoDesafio() == null ||
+                desafio.getDescricaoDesafio().trim().isEmpty()) {
+
+            throw new IllegalArgumentException(
+                    "Informe uma descrição para o desafio."
+            );
+        }
+
+        if (desafio.getQtdPontos() == null ||
+                desafio.getQtdPontos() <= 0) {
+
+            throw new IllegalArgumentException(
+                    "A quantidade de pontos do desafio deve ser maior que zero."
+            );
+        }
     }
 
-    // Validar ID recebido nas operações
+    // Validar ID
     private void validarId(Integer id) {
 
         if (id == null || id <= 0) {

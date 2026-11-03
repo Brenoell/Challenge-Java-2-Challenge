@@ -29,35 +29,40 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public List<Usuario> listar() {
-        return service.listar();
+    public ResponseEntity<List<Usuario>> listar() {
+
+        return ResponseEntity.ok(service.listar());
     }
 
     @GetMapping("/{id}")
-    public Usuario consultar(@PathVariable Integer id) {
-        return service.consultarPorId(id);
+    public ResponseEntity<Usuario> consultar(
+            @PathVariable Integer id) {
+
+        return ResponseEntity.ok(service.consultarPorId(id));
     }
 
     @GetMapping("/procurarPorCpf/{cpf}")
     public ResponseEntity<Usuario> consultarPorCpf(
             @PathVariable Long cpf) {
 
-        Usuario usuario = service.consultarPorCpf(cpf);
-
-        if (usuario == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(usuario);
+        return ResponseEntity.ok(service.consultarPorCpf(cpf));
     }
 
     @PutMapping
-    public void atualizar(@RequestBody Usuario usuario) {
+    public ResponseEntity<Void> atualizar(
+            @RequestBody Usuario usuario) {
+
         service.atualizar(usuario);
+
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Integer id) {
+    public ResponseEntity<Void> deletar(
+            @PathVariable Integer id) {
+
         service.deletar(id);
+
+        return ResponseEntity.noContent().build();
     }
 }

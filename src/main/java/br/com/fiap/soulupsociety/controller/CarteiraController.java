@@ -1,9 +1,12 @@
+
 package br.com.fiap.soulupsociety.controller;
 
 import br.com.fiap.soulupsociety.dto.CarteiraDTO;
 import br.com.fiap.soulupsociety.mapper.CarteiraMapper;
 import br.com.fiap.soulupsociety.models.Carteira;
 import br.com.fiap.soulupsociety.service.CarteiraService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,20 +21,33 @@ public class CarteiraController {
 
     // CREATE - Cadastrar carteira
     @PostMapping
-    public void cadastrar(@RequestBody Carteira carteira) {
+    public ResponseEntity<Void> cadastrar(
+            @RequestBody Carteira carteira) {
+
         service.cadastrar(carteira);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
     }
 
     // READ - Listar todas as carteiras
     @GetMapping
-    public List<Carteira> listar() {
-        return service.listar();
+    public ResponseEntity<List<Carteira>> listar() {
+
+        return ResponseEntity.ok(service.listar());
     }
 
     // READ - Consultar carteira por ID
     @GetMapping("/{id}")
-    public Carteira consultar(@PathVariable Integer id) {
-        return service.consultar(id);
+    public ResponseEntity<CarteiraDTO> consultar(
+            @PathVariable Integer id) {
+
+        Carteira carteira = service.consultar(id);
+
+        return ResponseEntity.ok(
+                CarteiraMapper.toRecordDTO(carteira)
+        );
     }
 
     // READ - Consultar carteira pela conta
@@ -41,71 +57,87 @@ public class CarteiraController {
 
         Carteira carteira = service.consultarPorConta(idConta);
 
-        if (carteira == null) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(CarteiraMapper.toRecordDTO(carteira));
+        return ResponseEntity.ok(
+                CarteiraMapper.toRecordDTO(carteira)
+        );
     }
 
-    //
+    // UPDATE - Trocar pontos por passagem
     @PatchMapping("/{id}/trocar-passagem")
-    public ResponseEntity<CarteiraDTO> trocarPassagem(@PathVariable Integer id) {
+    public ResponseEntity<CarteiraDTO> trocarPassagem(
+            @PathVariable Integer id) {
 
-        boolean trocou = service.trocarPontosPorPassagem(id);
+        service.trocarPontosPorPassagem(id);
 
-        if (!trocou) {
-            return ResponseEntity.badRequest().build();
-        }
+        Carteira carteira = service.consultar(id);
 
         return ResponseEntity.ok(
-                CarteiraMapper.toRecordDTO(service.consultar(id))
+                CarteiraMapper.toRecordDTO(carteira)
         );
     }
 
     // UPDATE - Adicionar pontos
     @PatchMapping("/{id}/pontos/adicionar")
-    public void adicionarPontos(
+    public ResponseEntity<Void> adicionarPontos(
             @PathVariable Integer id,
             @RequestParam int quantidade) {
+
         service.adicionarPontos(id, quantidade);
+
+        return ResponseEntity.noContent().build();
     }
 
     // UPDATE - Remover pontos
     @PatchMapping("/{id}/pontos/remover")
-    public void removerPontos(
+    public ResponseEntity<Void> removerPontos(
             @PathVariable Integer id,
             @RequestParam int quantidade) {
+
         service.removerPontos(id, quantidade);
+
+        return ResponseEntity.noContent().build();
     }
 
     // UPDATE - Adicionar vales-desconto
     @PatchMapping("/{id}/vales-desconto/adicionar")
-    public void adicionarValesDesconto(
+    public ResponseEntity<Void> adicionarValesDesconto(
             @PathVariable Integer id,
             @RequestParam int quantidade) {
+
         service.adicionarValesDesconto(id, quantidade);
+
+        return ResponseEntity.noContent().build();
     }
 
     // UPDATE - Remover vales-desconto
     @PatchMapping("/{id}/vales-desconto/remover")
-    public void removerValesDesconto(
+    public ResponseEntity<Void> removerValesDesconto(
             @PathVariable Integer id,
             @RequestParam int quantidade) {
+
         service.removerValesDesconto(id, quantidade);
+
+        return ResponseEntity.noContent().build();
     }
 
     // UPDATE - Adicionar passagens
     @PatchMapping("/{id}/passagens/adicionar")
-    public void adicionarPassagem(
+    public ResponseEntity<Void> adicionarPassagem(
             @PathVariable Integer id,
             @RequestParam int quantidade) {
+
         service.adicionarPassagem(id, quantidade);
+
+        return ResponseEntity.noContent().build();
     }
 
     // DELETE - Deletar carteira
     @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Integer id) {
+    public ResponseEntity<Void> deletar(
+            @PathVariable Integer id) {
+
         service.deletar(id);
+
+        return ResponseEntity.noContent().build();
     }
 }
