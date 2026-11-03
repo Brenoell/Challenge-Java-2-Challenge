@@ -18,14 +18,6 @@ public class ContaDesafioController {
 
     private final ContaDesafioService service = new ContaDesafioService();
 
-    // TESTE - Verificar se a rota está funcionando
-    @GetMapping("/teste")
-    public ResponseEntity<String> teste(
-            @PathVariable Integer idConta) {
-
-        return ResponseEntity.ok("Conta recebida: " + idConta);
-    }
-
     // CREATE - Concluir desafio (registra e credita os pontos)
     @PostMapping("/{idDesafio}/concluir")
     public ResponseEntity<ContaDesafioDTO> concluir(
