@@ -31,6 +31,15 @@ public class GlobalExceptionHandler {
                 .body(Map.of("erro", erro.getMessage()));
     }
 
+    // Conflito (ex.: desafio já concluído): HTTP 409
+    @ExceptionHandler(ConflitoException.class)
+    public ResponseEntity<?> tratarConflito(ConflitoException erro) {
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(Map.of("erro", erro.getMessage()));
+    }
+
     // Dados inválidos: HTTP 400
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<?> tratarDadosInvalidos(
