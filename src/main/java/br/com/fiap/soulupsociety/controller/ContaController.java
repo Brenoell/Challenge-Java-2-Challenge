@@ -1,7 +1,7 @@
 
 package br.com.fiap.soulupsociety.controller;
 
-import br.com.fiap.soulupsociety.dto.LoginDTO;
+
 import br.com.fiap.soulupsociety.models.Conta;
 import br.com.fiap.soulupsociety.service.ContaService;
 
@@ -26,19 +26,6 @@ public class ContaController {
         service.cadastrar(conta);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-
-    // LOGIN
-    @PostMapping("/login")
-    public ResponseEntity<Conta> login(
-            @RequestBody LoginDTO login) {
-
-        Conta conta = service.login(
-                login.email(),
-                login.senha()
-        );
-
-        return ResponseEntity.ok(conta);
     }
 
     // READ - Listar contas
